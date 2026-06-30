@@ -36,15 +36,13 @@ export function Sidebar({ currentSection, onChangeSection }: SidebarProps) {
         <nav className="space-y-1">
           {navItems.map((item) => (
             <NavItem
+              key={item.id}
               icon={item.icon}
               label={item.id}
               active={currentSection === item.id}
               onClick={() => onChangeSection(item.id)}
             />
           ))}
-          {/*<NavItem icon={LayoutGrid} label="Dashboard" active />
-          <NavItem icon={Folder} label="Projects" />
-          <NavItem icon={FileText} label="Invoices" />*/}
         </nav>
       </div>
 
