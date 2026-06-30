@@ -1,20 +1,22 @@
-import { ActiveProject } from "#/ui/dashboard/layouts/ActiveProject";
-import { ActivityFeed } from "#/ui/dashboard/layouts/ActivityFeed";
-import { PayoutSchedule } from "#/ui/dashboard/layouts/PayoutSchedule";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
-import { Status } from "#/ui/dashboard/layouts/Status";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
+import { DashboardSection } from "#/ui/dashboard/section/DashboardSection";
 import { createFileRoute } from "@tanstack/react-router";
-
+import { useState } from "react";
+export type Section = "Dashboard" | "Projects" | "Invoices";
 export const Route = createFileRoute("/dashboard/admin/")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
+  const [currentSection, setCurrentSection] = useState<Section>("Dashboard");
   return (
     <div className="min-h-screen w-full flex font-inter">
       {/*Sidebar*/}
-      <Sidebar />
+      <Sidebar
+        currentSection={currentSection}
+        onChangeSection={setCurrentSection}
+      />
 
       {/*Main*/}
       <main className="flex-1 ">
@@ -23,17 +25,19 @@ function RouteComponent() {
 
         {/*Content*/}
         <div className="max-w-6xl px-8 py-6">
-          {/*Status*/}
-          <Status />
+          {/*Dashboard Section*/}
+          <section className={currentSection === "Dashboard" ? "" : "hidden"}>
+            <DashboardSection />
+          </section>
 
-          {/* Active Projects */}
-          <ActiveProject />
-
-          {/* Payout Schedule */}
-          <PayoutSchedule />
-
-          {/* Activity Feed */}
-          <ActivityFeed />
+          {/*Projects*/}
+          <section className={currentSection === "Projects" ? "" : "hidden"}>
+            Projects Section
+          </section>
+          {/*Invoices*/}
+          <section className={currentSection === "Invoices" ? "" : "hidden"}>
+            Invoices Section
+          </section>
         </div>
       </main>
     </div>

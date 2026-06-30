@@ -6,9 +6,26 @@ import {
   Menu,
   Plus,
   Settings,
+  type LucideIcon,
 } from "lucide-react";
 import { NavItem } from "../components/NavItem";
-export function Sidebar() {
+import type { Section } from "#/routes/dashboard/admin";
+
+interface NavItem {
+  id: Section;
+  icon: LucideIcon;
+}
+const navItems: NavItem[] = [
+  { id: "Dashboard", icon: LayoutGrid },
+  { id: "Projects", icon: Folder },
+  { id: "Invoices", icon: FileText },
+];
+
+interface SidebarProps {
+  currentSection: Section;
+  onChangeSection: (section: Section) => void;
+}
+export function Sidebar({ currentSection, onChangeSection }: SidebarProps) {
   return (
     <aside className="sticky top-0 h-screen w-64 shrink-0 border-r border-neutral-800/50 flex flex-col justify-between px-4 py-6">
       <div>
@@ -17,9 +34,17 @@ export function Sidebar() {
           <span className="font-semibold text-lg">EntroSync</span>
         </div>
         <nav className="space-y-1">
-          <NavItem icon={LayoutGrid} label="Dashboard" active />
+          {navItems.map((item) => (
+            <NavItem
+              icon={item.icon}
+              label={item.id}
+              active={currentSection === item.id}
+              onClick={() => onChangeSection(item.id)}
+            />
+          ))}
+          {/*<NavItem icon={LayoutGrid} label="Dashboard" active />
           <NavItem icon={Folder} label="Projects" />
-          <NavItem icon={FileText} label="Invoices" />
+          <NavItem icon={FileText} label="Invoices" />*/}
         </nav>
       </div>
 
