@@ -30,7 +30,11 @@ export function Sidebar({ currentSection, onChangeSection }: SidebarProps) {
     <aside className="sticky top-0 h-screen w-64 shrink-0 border-r border-neutral-800/50 flex flex-col justify-between px-4 py-6">
       <div>
         <div className="flex items-center gap-2 px-2 mb-8">
-          <Menu size={20} />
+          <img
+            src="/logo_entrosync.svg"
+            alt="EntroSync Logo"
+            className="w-8 h-8"
+          />
           <span className="font-semibold text-lg">EntroSync</span>
         </div>
         <nav className="space-y-1">
