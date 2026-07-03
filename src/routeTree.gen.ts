@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
-import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as PlanIndexRouteImport } from './routes/plan/index'
 import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
@@ -26,6 +26,8 @@ const IndexRoute = IndexRouteImport.update({
 const RegisterIndexRoute = RegisterIndexRouteImport.update({
   id: '/register/',
   path: '/register/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlanIndexRoute = PlanIndexRouteImport.update({
   id: '/plan/',
   path: '/plan/',
@@ -41,6 +43,11 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
   id: '/dashboard/admin/',
   path: '/dashboard/admin/',
@@ -54,67 +61,76 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/login/': typeof LoginIndexRoute
-  '/register/': typeof RegisterIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/': typeof AuthIndexRoute
+  '/login/': typeof LoginIndexRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/plan/': typeof PlanIndexRoute
+  '/register/': typeof RegisterIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/login': typeof LoginIndexRoute
-  '/register': typeof RegisterIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth': typeof AuthIndexRoute
+  '/login': typeof LoginIndexRoute
   '/onboarding': typeof OnboardingIndexRoute
   '/plan': typeof PlanIndexRoute
+  '/register': typeof RegisterIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/login/': typeof LoginIndexRoute
-  '/register/': typeof RegisterIndexRoute
-  '/api/auth/$': typeof ApiAuthSplatRoute
   '/auth/': typeof AuthIndexRoute
+  '/login/': typeof LoginIndexRoute
   '/onboarding/': typeof OnboardingIndexRoute
   '/plan/': typeof PlanIndexRoute
+  '/register/': typeof RegisterIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/login/' | '/register/' | '/api/auth/$' | '/dashboard/admin/'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/register' | '/api/auth/$' | '/dashboard/admin'
-  id:
-    | '__root__'
     | '/'
+    | '/auth/'
     | '/login/'
+    | '/onboarding/'
+    | '/plan/'
     | '/register/'
     | '/api/auth/$'
-  fullPaths: '/' | '/auth/' | '/onboarding/' | '/plan/' | '/dashboard/admin/'
+    | '/dashboard/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/onboarding' | '/plan' | '/dashboard/admin'
+  to:
+    | '/'
+    | '/auth'
+    | '/login'
+    | '/onboarding'
+    | '/plan'
+    | '/register'
+    | '/api/auth/$'
+    | '/dashboard/admin'
   id:
     | '__root__'
     | '/'
     | '/auth/'
+    | '/login/'
     | '/onboarding/'
     | '/plan/'
+    | '/register/'
+    | '/api/auth/$'
     | '/dashboard/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  LoginIndexRoute: typeof LoginIndexRoute
-  RegisterIndexRoute: typeof RegisterIndexRoute
-  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   AuthIndexRoute: typeof AuthIndexRoute
+  LoginIndexRoute: typeof LoginIndexRoute
   OnboardingIndexRoute: typeof OnboardingIndexRoute
   PlanIndexRoute: typeof PlanIndexRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
 }
 
@@ -132,6 +148,8 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register/'
       preLoaderRoute: typeof RegisterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/plan/': {
       id: '/plan/'
       path: '/plan'
@@ -153,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/': {
+      id: '/auth/'
+      path: '/auth'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/admin/': {
       id: '/dashboard/admin/'
       path: '/dashboard/admin'
@@ -172,12 +197,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  LoginIndexRoute: LoginIndexRoute,
-  RegisterIndexRoute: RegisterIndexRoute,
-  ApiAuthSplatRoute: ApiAuthSplatRoute,
   AuthIndexRoute: AuthIndexRoute,
+  LoginIndexRoute: LoginIndexRoute,
   OnboardingIndexRoute: OnboardingIndexRoute,
   PlanIndexRoute: PlanIndexRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
 }
 export const routeTree = rootRouteImport
