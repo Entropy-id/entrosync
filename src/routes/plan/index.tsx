@@ -1,19 +1,40 @@
 import { streamPrd } from "#/modules/ai/ai.client";
-import { createFileRoute } from "@tanstack/react-router";
+import { createProjectWithPrd } from "#/modules/project/project.api";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { ArrowRight, ArrowUp, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowUp, Loader2, X } from "lucide-react";
 
 export const Route = createFileRoute("/plan/")({
   component: RouteComponent,
 });
 
+function extractTitleFromPrd(content: string): string {
+  const overviewMatch = content.match(/##\s*1\.\s*Overview\s*\n+([^\n]+)/i);
+  if (overviewMatch) {
+    return overviewMatch[1]
+      .trim()
+      .replace(/\*\*/g, "")
+      .replace(/\*/g, "")
+      .slice(0, 100);
+  }
+  const headingMatch =
+    content.match(/^#\s+(.+)$/m) || content.match(/^##\s+(.+)$/m);
+  if (headingMatch) return headingMatch[1].trim().slice(0, 100);
+  return "Untitled Project";
+}
+
 function RouteComponent() {
+  const navigate = useNavigate();
   const [value, setValue] = useState("");
   const [submittedText, setSubmittedText] = useState("");
   const [generatedContent, setGeneratedContent] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [reviseValue, setReviseValue] = useState("");
+  const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
+  const [projectTitle, setProjectTitle] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const contentEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -83,6 +104,34 @@ function RouteComponent() {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handleRevise();
+    }
+  };
+
+  const handleOpenSaveDialog = () => {
+    const title = extractTitleFromPrd(generatedContent);
+    setProjectTitle(title);
+    setProjectDescription(submittedText);
+    setIsSaveDialogOpen(true);
+  };
+
+  const handleSaveProject = async () => {
+    if (!projectTitle.trim() || !generatedContent.trim()) return;
+    setIsSaving(true);
+    try {
+      await createProjectWithPrd({
+        data: {
+          title: projectTitle.trim(),
+          description: projectDescription,
+          content: generatedContent,
+        },
+      });
+      setIsSaveDialogOpen(false);
+      navigate({ to: "/dashboard/admin" });
+    } catch (error) {
+      console.error("Save project error:", error);
+      alert("Failed to save project. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -175,7 +224,9 @@ function RouteComponent() {
               </div>
               <button
                 type="button"
-                className="bg-white text-black px-5 py-2.5 rounded-full font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors"
+                onClick={handleOpenSaveDialog}
+                disabled={!generatedContent.trim() || isStreaming}
+                className="bg-white text-black px-5 py-2.5 rounded-full font-medium flex items-center gap-2 hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Finish <ArrowRight className="w-4 h-4" />
               </button>
@@ -238,6 +289,80 @@ function RouteComponent() {
           </div>
         </div>
       </div>
+
+      {/* Save Dialog Modal */}
+      {isSaveDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+          <div className="w-full max-w-md bg-[#121214] border border-white/10 rounded-2xl p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-white">Save Project</h2>
+              <button
+                type="button"
+                onClick={() => setIsSaveDialogOpen(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Project Title
+                </label>
+                <input
+                  type="text"
+                  value={projectTitle}
+                  onChange={(e) => setProjectTitle(e.target.value)}
+                  placeholder="Enter project title..."
+                  className="w-full bg-[#0a0a0c] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-white/30 transition-colors"
+                />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Title extracted from the AI-generated PRD. Feel free to edit
+                  it.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={projectDescription}
+                  onChange={(e) => setProjectDescription(e.target.value)}
+                  placeholder="Enter project description..."
+                  rows={4}
+                  className="w-full bg-[#0a0a0c] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none focus:border-white/30 transition-colors resize-none leading-relaxed"
+                />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Defaults to your original brief. Edit it if you want a
+                  different description.
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleSaveProject}
+                  disabled={!projectTitle.trim() || isSaving}
+                  className="w-full bg-white text-black font-medium py-3 rounded-xl hover:bg-gray-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      Create Project <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
