@@ -15,6 +15,7 @@ import { Route as PlanIndexRouteImport } from './routes/plan/index'
 import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as ProjectProjectNameIndexRouteImport } from './routes/project/$projectName/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 
@@ -48,6 +49,11 @@ const AuthIndexRoute = AuthIndexRouteImport.update({
   path: '/auth/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectProjectNameIndexRoute = ProjectProjectNameIndexRouteImport.update({
+  id: '/project/$projectName/',
+  path: '/project/$projectName/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
   id: '/dashboard/admin/',
   path: '/dashboard/admin/',
@@ -68,6 +74,7 @@ export interface FileRoutesByFullPath {
   '/register/': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/project/$projectName/': typeof ProjectProjectNameIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -78,6 +85,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
+  '/project/$projectName': typeof ProjectProjectNameIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/register/': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/project/$projectName/': typeof ProjectProjectNameIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
     | '/register/'
     | '/api/auth/$'
     | '/dashboard/admin/'
+    | '/project/$projectName/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/api/auth/$'
     | '/dashboard/admin'
+    | '/project/$projectName'
   id:
     | '__root__'
     | '/'
@@ -121,6 +132,7 @@ export interface FileRouteTypes {
     | '/register/'
     | '/api/auth/$'
     | '/dashboard/admin/'
+    | '/project/$projectName/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -132,6 +144,7 @@ export interface RootRouteChildren {
   RegisterIndexRoute: typeof RegisterIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  ProjectProjectNameIndexRoute: typeof ProjectProjectNameIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/$projectName/': {
+      id: '/project/$projectName/'
+      path: '/project/$projectName'
+      fullPath: '/project/$projectName/'
+      preLoaderRoute: typeof ProjectProjectNameIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/admin/': {
       id: '/dashboard/admin/'
       path: '/dashboard/admin'
@@ -204,6 +224,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterIndexRoute: RegisterIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+  ProjectProjectNameIndexRoute: ProjectProjectNameIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
