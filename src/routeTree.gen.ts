@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as PlanIndexRouteImport } from './routes/plan/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 
@@ -23,6 +26,14 @@ const IndexRoute = IndexRouteImport.update({
 const RegisterIndexRoute = RegisterIndexRouteImport.update({
   id: '/register/',
   path: '/register/',
+const PlanIndexRoute = PlanIndexRouteImport.update({
+  id: '/plan/',
+  path: '/plan/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
@@ -46,6 +57,9 @@ export interface FileRoutesByFullPath {
   '/login/': typeof LoginIndexRoute
   '/register/': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/': typeof AuthIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
+  '/plan/': typeof PlanIndexRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +67,9 @@ export interface FileRoutesByTo {
   '/login': typeof LoginIndexRoute
   '/register': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth': typeof AuthIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
+  '/plan': typeof PlanIndexRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -61,6 +78,9 @@ export interface FileRoutesById {
   '/login/': typeof LoginIndexRoute
   '/register/': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/auth/': typeof AuthIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
+  '/plan/': typeof PlanIndexRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -75,6 +95,15 @@ export interface FileRouteTypes {
     | '/login/'
     | '/register/'
     | '/api/auth/$'
+  fullPaths: '/' | '/auth/' | '/onboarding/' | '/plan/' | '/dashboard/admin/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/auth' | '/onboarding' | '/plan' | '/dashboard/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth/'
+    | '/onboarding/'
+    | '/plan/'
     | '/dashboard/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -83,6 +112,9 @@ export interface RootRouteChildren {
   LoginIndexRoute: typeof LoginIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  AuthIndexRoute: typeof AuthIndexRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
+  PlanIndexRoute: typeof PlanIndexRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
 }
 
@@ -100,6 +132,18 @@ declare module '@tanstack/react-router' {
       path: '/register'
       fullPath: '/register/'
       preLoaderRoute: typeof RegisterIndexRouteImport
+    '/plan/': {
+      id: '/plan/'
+      path: '/plan'
+      fullPath: '/plan/'
+      preLoaderRoute: typeof PlanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login/': {
@@ -131,6 +175,9 @@ const rootRouteChildren: RootRouteChildren = {
   LoginIndexRoute: LoginIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  AuthIndexRoute: AuthIndexRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
+  PlanIndexRoute: PlanIndexRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
 }
 export const routeTree = rootRouteImport

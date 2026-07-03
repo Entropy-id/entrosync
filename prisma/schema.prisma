@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -42,11 +41,11 @@ enum ResourceType {
 }
 
 enum Rating {
-  ONE @map("1")
-  TWO @map("2")
+  ONE   @map("1")
+  TWO   @map("2")
   THREE @map("3")
-  FOUR @map("4")
-  FIVE @map("5")
+  FOUR  @map("4")
+  FIVE  @map("5")
 }
 
 model User {
