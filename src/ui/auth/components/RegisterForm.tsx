@@ -1,5 +1,9 @@
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { authClient } from "#/lib/auth.client";
+import {
+	loginWithGoogleServerFn,
+	registerServerFn,
+} from "#/modules/auth/auth.api";
 import { InputField } from "./InputField";
 
 interface RegisterFormProps {
@@ -7,31 +11,45 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onToggle }: RegisterFormProps) {
-	const [fullName, setFullName] = useState("");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
+	const registerServerFnHandler = useServerFn(registerServerFn);
+	const loginWithGoogleServerFnHandler = useServerFn(loginWithGoogleServerFn);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const [registerData, setRegisterData] = useState({
+		name: "",
+		email: "",
+		password: "",
+		confirmPassword: "",
+	});
+
+	async function handleRegisterUser(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 
-		if (password !== confirmPassword) {
-			console.error("Password do not match!");
+		if (registerData.password !== registerData.confirmPassword) {
+			console.error("Passwords do not match!");
 			return;
 		}
 
-		const { data, error } = await authClient.signUp.email({
-			email,
-			password,
-			name: fullName,
-		});
-
-		if (error) {
-			console.error("Registration failed:", error.message);
-		} else {
-			console.log("Registration successful!", data);
+		try {
+			await registerServerFnHandler({
+				data: {
+					name: registerData.name,
+					email: registerData.email,
+					password: registerData.password,
+				},
+			});
+		} catch (error) {
+			console.error("Registration failed:", error);
 		}
-	};
+	}
+
+	async function handleLoginWithGoogle() {
+		try {
+			await loginWithGoogleServerFnHandler();
+		} catch (error) {
+			console.error("Google login failed:", error);
+		}
+	}
+
 	return (
 		<div className="w-full max-w-sm mx-auto space-y-6">
 			{/* Header */}
@@ -42,6 +60,7 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
 
 			{/* Google Button */}
 			<button
+				onClick={handleLoginWithGoogle}
 				type="button"
 				className="w-full bg-white text-black font-medium py-2.5 rounded-full hover:bg-gray-200 transition-colors"
 			>
@@ -57,38 +76,49 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
 			</div>
 
 			{/* Form Fields */}
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form onSubmit={handleRegisterUser} className="space-y-4">
 				<InputField
 					id="fullName"
 					label="Full Name"
 					type="text"
 					placeholder="Akmal Rizky / Zaghy Zalayetha"
-					value={fullName}
-					onChange={(e) => setFullName(e.target.value)}
+					value={registerData.name}
+					onChange={(e) =>
+						setRegisterData({ ...registerData, name: e.target.value })
+					}
 				/>
 				<InputField
 					id="email"
 					label="Email"
 					type="email"
 					placeholder="you@example.com"
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					value={registerData.email}
+					onChange={(e) =>
+						setRegisterData({ ...registerData, email: e.target.value })
+					}
 				/>
 				<InputField
 					id="password"
 					label="Password"
 					type="password"
 					placeholder="Enter your password"
-					value={password}
-					onChange={(e) => setPassword(e.target.value)}
+					value={registerData.password}
+					onChange={(e) =>
+						setRegisterData({ ...registerData, password: e.target.value })
+					}
 				/>
 				<InputField
 					id="confirmPassword"
 					label="Confirm Password"
 					type="password"
 					placeholder="Enter your confirmation password"
-					value={confirmPassword}
-					onChange={(e) => setConfirmPassword(e.target.value)}
+					value={registerData.confirmPassword}
+					onChange={(e) =>
+						setRegisterData({
+							...registerData,
+							confirmPassword: e.target.value,
+						})
+					}
 				/>
 
 				{/* Submit Button */}

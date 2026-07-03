@@ -1,14 +1,35 @@
+import { getSessionServerFn, logoutServerFn } from "#/modules/auth/auth.api";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
 import { DashboardSection } from "#/ui/dashboard/section/DashboardSection";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+
 export type Section = "Dashboard" | "Projects" | "Invoices";
 export const Route = createFileRoute("/dashboard/admin/")({
   component: RouteComponent,
+  beforeLoad: async () => {
+    const session = await getSessionServerFn();
+
+    if (!session) {
+      throw redirect({
+        to: "/login"
+      })
+    }
+
+    return session;
+  }
 });
 
 function RouteComponent() {
+  const logoutServerFnHandler = useServerFn(logoutServerFn)
+  const session = Route.useRouteContext();
+
+  async function handleLogout() {
+    await logoutServerFnHandler()
+  }
+
   const [currentSection, setCurrentSection] = useState<Section>("Dashboard");
   return (
     <div className="min-h-screen w-full flex font-inter">

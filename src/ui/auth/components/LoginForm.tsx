@@ -1,5 +1,9 @@
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { authClient } from "#/lib/auth.client";
+import {
+	loginServerFn,
+	loginWithGoogleServerFn,
+} from "#/modules/auth/auth.api";
 import { InputField } from "./InputField";
 
 interface LoginFormProps {
@@ -7,23 +11,37 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onToggle }: LoginFormProps) {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
+	const loginServerFnHandler = useServerFn(loginServerFn);
+	const loginWithGoogleServerFnHandler = useServerFn(loginWithGoogleServerFn);
 
-	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+	const [loginData, setLoginData] = useState({
+		email: "",
+		password: "",
+	});
+
+	async function handleLoginUser(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 
-		const { data, error } = await authClient.signIn.email({
-			email,
-			password,
-		});
-
-		if (error) {
-			console.error("Login failed:", error.message);
-		} else {
-			console.log("Login successful!", data);
+		try {
+			await loginServerFnHandler({
+				data: {
+					email: loginData.email,
+					password: loginData.password,
+				},
+			});
+		} catch (error) {
+			console.error("Login failed:", error);
 		}
-	};
+	}
+
+	async function handleLoginWithGoogle() {
+		try {
+			await loginWithGoogleServerFnHandler();
+		} catch (error) {
+			console.error("Google login failed:", error);
+		}
+	}
+
 	return (
 		<div className="w-full max-w-sm mx-auto space-y-6">
 			{/* Header */}
@@ -34,6 +52,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
 
 			{/* Google Button */}
 			<button
+				onClick={handleLoginWithGoogle}
 				type="button"
 				className="w-full bg-white text-black font-medium py-2.5 rounded-full hover:bg-gray-200 transition-colors"
 			>
@@ -49,30 +68,37 @@ export function LoginForm({ onToggle }: LoginFormProps) {
 			</div>
 
 			{/* Form Fields */}
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form onSubmit={handleLoginUser} className="space-y-4">
 				<InputField
 					id="email"
 					label="Email"
 					type="email"
 					placeholder="you@example.com"
-					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					value={loginData.email}
+					onChange={(e) =>
+						setLoginData({ ...loginData, email: e.target.value })
+					}
 				/>
 				<div className="flex flex-col gap-1">
 					<div className="flex justify-between items-center">
 						<label htmlFor="password" className="text-sm text-gray-300">
 							Password
 						</label>
-						<a href="#" className="text-xs text-gray-500 hover:text-gray-300">
+						<button
+							type="button"
+							className="text-xs text-gray-500 hover:text-gray-300 bg-transparent border-none p-0 cursor-pointer"
+						>
 							Forgot Password?
-						</a>
+						</button>
 					</div>
 					<InputField
 						id="password"
 						type="password"
 						placeholder="Enter your password"
-						value={password}
-						onChange={(e) => setPassword(e.target.value)}
+						value={loginData.password}
+						onChange={(e) =>
+							setLoginData({ ...loginData, password: e.target.value })
+						}
 					/>
 				</div>
 
