@@ -1,26 +1,46 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { getSessionServerFn, logoutServerFn } from "#/modules/auth/auth.api";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
 import { DashboardSection } from "#/ui/dashboard/section/DashboardSection";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
+
 export type Section = "Dashboard" | "Projects" | "Invoices";
 export const Route = createFileRoute("/dashboard/admin/")({
-	component: RouteComponent,
+  component: RouteComponent,
+  beforeLoad: async () => {
+    const session = await getSessionServerFn();
+
+    if (!session) {
+      throw redirect({
+        to: "/login"
+      })
+    }
+
+    return session;
+  }
 });
 
 function RouteComponent() {
-	const [currentSection, setCurrentSection] = useState<Section>("Dashboard");
-	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const logoutServerFnHandler = useServerFn(logoutServerFn)
+  const session = Route.useRouteContext();
 
-	return (
-		<div className="min-h-screen w-full flex font-inter">
-			{/*Sidebar*/}
-			<Sidebar
-				currentSection={currentSection}
-				onChangeSection={setCurrentSection}
-				mobileOpen={mobileMenuOpen}
+  async function handleLogout() {
+    await logoutServerFnHandler()
+  }
+
+  const [currentSection, setCurrentSection] = useState<Section>("Dashboard");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  return (
+    <div className="min-h-screen w-full flex font-inter">
+      {/*Sidebar*/}
+      <Sidebar
+        currentSection={currentSection}
+        onChangeSection={setCurrentSection}
+        mobileOpen={mobileMenuOpen}
 				onClose={() => setMobileMenuOpen(false)}
-			/>
+      />
 
 			{/*Main*/}
 			<main className="flex-1 min-w-0">
