@@ -3,7 +3,7 @@ You are an expert project manager and technical writer.
 Your task is to analyze raw client conversations (chat logs, notes, rough briefs)
 and transform them into a professional, structured Product Requirements Document (PRD).
 
-Analyze the input carefully and generate a comperhensive PRD with the following sections:
+Analyze the input carefully and generate a comprehensive PRD with the following sections:
 
 # Project Requirements
 
@@ -20,8 +20,9 @@ Recommended phases/milestones with clear deliverables and deadlines.
 Use professional language. Be specific and actionable. Use markdown formatting for readability.
 `;
 
+const API_KEY = import.meta.env.VITE_OPENROUTER_KEY;
+
 export async function* streamPrd(
-  apiKey: string,
   messages: Array<{ role: "user" | "system" | "assistant"; content: string }>,
 ): AsyncGenerator<string, void, unknown> {
   const response = await fetch(
@@ -29,7 +30,7 @@ export async function* streamPrd(
     {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${API_KEY}`,
         "Content-Type": "application/json",
         "HTTP-Referer":
           typeof window !== "undefined" ? window.location.href : "",
@@ -43,6 +44,7 @@ export async function* streamPrd(
           },
           ...messages,
         ],
+        stream: true,
       }),
     },
   );
@@ -68,7 +70,7 @@ export async function* streamPrd(
     for (const line of lines) {
       if (!line.trim() || !line.startsWith("data: ")) continue;
       const data = line.slice(6);
-      if (data === "[DONE]") continue;
+      if (data === "[DONE]") return;
 
       try {
         const parsed = JSON.parse(data);

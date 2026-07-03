@@ -1,9 +1,8 @@
 import { streamPrd } from "#/modules/ai/ai.client";
 import { createFileRoute } from "@tanstack/react-router";
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { ArrowRight, ArrowUp, Loader2 } from "lucide-react";
-import { streamPrdServer } from "#/modules/ai/ai.server";
 
 export const Route = createFileRoute("/plan/")({
   component: RouteComponent,
@@ -33,14 +32,10 @@ function RouteComponent() {
     setValue("");
 
     try {
-      // const stream = await streamPrdServer({
-      //   data: {
-      //     messages: [{ role: "user", content: value }],
-      //   } as any,
-      // });
-      // for await (const chunck of stream) {
-      //   setGeneratedContent((prev) => prev + chunck);
-      // }
+      const stream = streamPrd([{ role: "user", content: value }]);
+      for await (const chunk of stream) {
+        setGeneratedContent((prev) => prev + chunk);
+      }
     } catch (error) {
       console.error("Streaming error:", error);
       setGeneratedContent(
@@ -73,8 +68,8 @@ function RouteComponent() {
         { role: "assistant", content: generatedContent },
         { role: "user", content: revision },
       ]);
-      for await (const chunck of stream) {
-        setGeneratedContent((prev) => prev + chunck);
+      for await (const chunk of stream) {
+        setGeneratedContent((prev) => prev + chunk);
       }
     } catch (error) {
       console.error("Revise error:", error);
@@ -85,7 +80,7 @@ function RouteComponent() {
   };
 
   const handleReviseKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key == "Enter" && (e.metaKey || e.ctrlKey)) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       handleRevise();
     }
@@ -163,8 +158,8 @@ function RouteComponent() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex overflow-hidden">
-      {/*Left Panel - Generated PRD*/} {/* Left Panel - Generated PRD */}
+    <div className="h-screen w-full bg-black text-white flex overflow-hidden">
+      {/* Left Panel - Generated PRD */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="flex-1 overflow-y-auto p-8 lg:p-12">
           <div className="max-w-3xl mx-auto">
@@ -202,9 +197,9 @@ function RouteComponent() {
         </div>
       </div>
       {/* Right Sidebar */}
-      <div className="w-[420px] flex-shrink-0 border-l border-white/10 bg-[#0a0a0c] flex flex-col">
+      <div className="w-[420px] flex-shrink-0 border-l border-white/10 bg-[#0a0a0c] h-full overflow-hidden flex flex-col">
         {/* Original Brief */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
           <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
             Your brief
           </h3>
@@ -214,7 +209,7 @@ function RouteComponent() {
         </div>
 
         {/* Revise Input */}
-        <div className="border-t border-white/10 p-6">
+        <div className="border-t border-white/10 p-6 flex-shrink-0">
           <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider mb-4">
             Revise
           </h3>
