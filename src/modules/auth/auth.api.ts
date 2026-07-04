@@ -15,7 +15,7 @@ export const registerServerFn = createServerFn()
 			},
 		});
 		throw redirect({
-			to: "/dashboard/admin",
+			to: "/onboarding",
 		});
 	});
 
@@ -38,6 +38,19 @@ export const loginWithGoogleServerFn = createServerFn().handler(async () => {
 		body: {
 			provider: "google",
 			callbackURL: "/dashboard/admin",
+		},
+	});
+
+	throw redirect({
+		href: response.url,
+	});
+});
+
+export const registerWithGoogleServerFn = createServerFn().handler(async () => {
+	const response = await auth.api.signInSocial({
+		body: {
+			provider: "google",
+			callbackURL: "/onboarding",
 		},
 	});
 

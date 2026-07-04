@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { prisma } from "#/lib/db";
+import { prisma } from "#/utils/prisma";
 import { recentActivityInputSchema } from "./dashboard.schema";
 
 function decimalToNumber(value: unknown): number {

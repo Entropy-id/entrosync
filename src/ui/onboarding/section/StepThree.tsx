@@ -15,10 +15,7 @@ export function StepThree({ onGetStarted }: StepThreeProps) {
 						One-Click Invoice Generator
 					</h1>
 					<p className="text-gray-400 text-lg leading-relaxed">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere
-						distinctio repellendus facilis cupiditate consectetur, architecto
-						explicabo quae perspiciatis quos iusto delectus iure aspernatur,
-						animi saepe magni. Asperiores sint animi unde?
+						Eliminate the administrative burden. Define your project milestones once, and let EntroSync handle the billing automatically.
 					</p>
 				</div>
 

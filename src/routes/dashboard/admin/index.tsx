@@ -4,6 +4,7 @@ import { Topbar } from "#/ui/dashboard/layouts/Topbar";
 import { DashboardSection } from "#/ui/dashboard/section/DashboardSection";
 import { ProjectsSection } from "#/ui/dashboard/section/ProjectsSection";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { InvoicesSection } from "#/ui/dashboard/section/InvoicesSection";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
@@ -48,7 +49,19 @@ function RouteComponent() {
 
   function handleChangeSection(section: Section) {
     setCurrentSection(section);
+    if (section === "Invoices") {
+      setInvoiceInitialView("list");
+    }
     navigate({ to: "/dashboard/admin", search: { tab: section } });
+  }
+  const [invoiceInitialView, setInvoiceInitialView] = useState<
+    "list" | "generator"
+  >("list");
+
+  function handleGenerateInvoice() {
+    setCurrentSection("Invoices");
+    setInvoiceInitialView("generator");
+    setMobileMenuOpen(false);
   }
 
   return (
@@ -79,7 +92,7 @@ function RouteComponent() {
           </section>
           {/*Invoices*/}
           <section className={currentSection === "Invoices" ? "" : "hidden"}>
-            Invoices Section
+            <InvoicesSection initialSubView={invoiceInitialView} />
           </section>
         </div>
       </main>
