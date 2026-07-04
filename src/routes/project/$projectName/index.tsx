@@ -104,10 +104,10 @@ function ProjectDetailPage() {
 
   const [status, setStatus] = useState(apiStatusToDisplay(project.status));
   const [startDate, setStartDate] = useState(
-    formatDisplayDate(project.milestones[0]?.startDate || project.createdAt),
+    formatDisplayDate(project.startDate),
   );
   const [targetDate, setTargetDate] = useState(
-    formatDisplayDate(project.milestones.at(-1)?.dueDate ?? null),
+    formatDisplayDate(project.dueDate),
   );
 
   const [editingProperty, setEditingProperty] = useState<
@@ -117,31 +117,43 @@ function ProjectDetailPage() {
   const startDateRef = useRef<HTMLInputElement>(null);
   const targetDateRef = useRef<HTMLInputElement>(null);
 
-  function handleSaveProperty() {
+  function handleSaveProperty(
+    propertyToSave: "status" | "startDate" | "targetDate",
+    updatedValue: string,
+  ) {
     setEditingProperty(null);
-    if (editingProperty === "status") {
+    console.log(propertyToSave);
+    console.log(updatedValue);
+
+    const currentStatus = propertyToSave === "status" ? updatedValue : status;
+    const currentStartDate =
+      propertyToSave === "startDate" ? updatedValue : startDate;
+    const currentTargetDate =
+      propertyToSave === "targetDate" ? updatedValue : targetDate;
+
+    if (propertyToSave === "status") {
       updateProjectFn({
         data: {
           id: project.id,
-          status: displayStatusToApi(status),
+          status: displayStatusToApi(currentStatus),
         },
       });
     }
-    if (editingProperty === "startDate") {
-      console.log(`Start Date: ${startDate}`);
+    if (propertyToSave === "startDate") {
+      console.log(`Start Date: ${currentStartDate}`);
       updateProjectFn({
         data: {
           id: project.id,
-          startDate: startDate,
+          startDate: currentStartDate,
         },
       });
     }
-    if (editingProperty === "targetDate") {
-      console.log(`Target Date: ${targetDate}`);
+    if (propertyToSave === "targetDate") {
+      console.log(`Target Date: ${currentTargetDate}`);
       updateProjectFn({
         data: {
           id: project.id,
-          targetDate: targetDate,
+          targetDate: currentTargetDate,
         },
       });
     }
@@ -587,7 +599,7 @@ function ProjectDetailPage() {
                               key={s}
                               onClick={() => {
                                 setStatus(s);
-                                handleSaveProperty();
+                                handleSaveProperty("status", s);
                               }}
                               className={`w-full text-left text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
                                 status === s
@@ -622,7 +634,7 @@ function ProjectDetailPage() {
                           if (iso) {
                             setStartDate(formatDisplayDate(iso));
                             setEditingProperty("startDate");
-                            handleSaveProperty();
+                            handleSaveProperty("startDate", iso);
                           }
                         }}
                         onBlur={() => setEditingProperty("startDate")}
@@ -658,7 +670,10 @@ function ProjectDetailPage() {
                           if (iso) {
                             setTargetDate(formatDisplayDate(iso));
                             setEditingProperty("targetDate");
-                            handleSaveProperty();
+                            handleSaveProperty(
+                              "targetDate",
+                              formatDisplayDate(iso),
+                            );
                           }
                         }}
                         onBlur={() => setEditingProperty("targetDate")}
