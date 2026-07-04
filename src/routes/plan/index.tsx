@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createClientOnlyFn } from "@tanstack/react-start";
 import { ArrowRight, ArrowUp, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { createClientOnlyFn } from "@tanstack/react-start";
 import { createProjectWithPrd } from "#/modules/project/project.api";
 
 const streamPRD = createClientOnlyFn(

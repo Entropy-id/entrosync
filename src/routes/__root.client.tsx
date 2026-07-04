@@ -1,5 +1,7 @@
-import { TanStackDevtools } from "@tanstack/react-router-devtools";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import {
+	TanStackDevtools,
+	TanStackRouterDevtoolsPanel,
+} from "@tanstack/react-router-devtools";
 
 export function DevtoolsPanel() {
 	return (
