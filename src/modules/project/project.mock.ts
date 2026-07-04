@@ -1,9 +1,16 @@
+export interface Task {
+  id: string;
+  name: string;
+  dueDate: string;
+}
+
 export interface Milestone {
   title: string;
   date: string;
   tasks: number;
   completion: string;
   description: string;
+  taskList: Task[];
 }
 
 export interface Resource {
@@ -50,6 +57,20 @@ export const mockProjects: Project[] = [
         tasks: 4,
         completion: "0%",
         description: "Craft UI & UX Design in Figma and create prototype.",
+        taskList: [
+          {
+            id: "ID-1",
+            name: "Design freelancer dashboard page",
+            dueDate: "Jun 23",
+          },
+          { id: "ID-2", name: "Design projects page", dueDate: "Jun 24" },
+          { id: "ID-3", name: "Design invoices page", dueDate: "Jun 24" },
+          {
+            id: "ID-4",
+            name: "Design client dashboard page",
+            dueDate: "Jun 24",
+          },
+        ],
       },
       {
         title: "Software Development",
@@ -57,6 +78,9 @@ export const mockProjects: Project[] = [
         tasks: 1,
         completion: "0%",
         description: "Software development phase.",
+        taskList: [
+          { id: "ID-1", name: "Set up project repository", dueDate: "Jun 25" },
+        ],
       },
       {
         title: "Documentation",
@@ -65,6 +89,7 @@ export const mockProjects: Project[] = [
         completion: "0%",
         description:
           "Deliver a complete documentation for client (User Guide, Technical Guide, etc)",
+        taskList: [{ id: "ID-1", name: "Write user guide", dueDate: "Jun 30" }],
       },
     ],
     progress: {
@@ -92,6 +117,11 @@ export const mockProjects: Project[] = [
         tasks: 3,
         completion: "100%",
         description: "Research and analyze current brand positioning.",
+        taskList: [
+          { id: "ID-1", name: "Competitor analysis", dueDate: "Jul 2" },
+          { id: "ID-2", name: "Brand audit report", dueDate: "Jul 4" },
+          { id: "ID-3", name: "Strategy presentation", dueDate: "Jul 5" },
+        ],
       },
       {
         title: "Visual Identity Design",
@@ -99,6 +129,11 @@ export const mockProjects: Project[] = [
         tasks: 6,
         completion: "60%",
         description: "Logo, typography, and color system design.",
+        taskList: [
+          { id: "ID-1", name: "Logo concepts", dueDate: "Jul 10" },
+          { id: "ID-2", name: "Color palette", dueDate: "Jul 12" },
+          { id: "ID-3", name: "Typography system", dueDate: "Jul 14" },
+        ],
       },
     ],
     progress: {
@@ -126,6 +161,10 @@ export const mockProjects: Project[] = [
         tasks: 5,
         completion: "100%",
         description: "Project scaffolding and CI/CD pipeline.",
+        taskList: [
+          { id: "ID-1", name: "Set up CI/CD", dueDate: "Jul 15" },
+          { id: "ID-2", name: "Configure auth service", dueDate: "Jul 17" },
+        ],
       },
       {
         title: "Core Features",
@@ -133,6 +172,10 @@ export const mockProjects: Project[] = [
         tasks: 15,
         completion: "95%",
         description: "Authentication, sync engine, and offline mode.",
+        taskList: [
+          { id: "ID-1", name: "Implement offline sync", dueDate: "Aug 1" },
+          { id: "ID-2", name: "Build notification system", dueDate: "Aug 5" },
+        ],
       },
       {
         title: "QA & Release",
@@ -140,6 +183,10 @@ export const mockProjects: Project[] = [
         tasks: 8,
         completion: "80%",
         description: "Testing, bug fixes, and app store submission.",
+        taskList: [
+          { id: "ID-1", name: "End-to-end testing", dueDate: "Aug 25" },
+          { id: "ID-2", name: "App store submission", dueDate: "Aug 30" },
+        ],
       },
     ],
     progress: {
