@@ -2,8 +2,17 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, ArrowUp, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { streamPrd } from "#/modules/ai/ai.client";
+import { createClientOnlyFn } from "@tanstack/react-start";
 import { createProjectWithPrd } from "#/modules/project/project.api";
+
+const streamPRD = createClientOnlyFn(
+	async (
+		messages: Array<{ role: "user" | "system" | "assistant"; content: string }>,
+	) => {
+		const { streamPrd } = await import("#/modules/ai/ai.client");
+		return streamPrd(messages);
+	},
+);
 
 export const Route = createFileRoute("/plan/")({
 	component: RouteComponent,
@@ -53,7 +62,8 @@ function RouteComponent() {
 		setValue("");
 
 		try {
-			const stream = streamPrd([{ role: "user", content: value }]);
+			const stream = await streamPRD([{ role: "user", content: value }]);
+			if (!stream) return;
 			for await (const chunk of stream) {
 				setGeneratedContent((prev) => prev + chunk);
 			}
@@ -84,11 +94,12 @@ function RouteComponent() {
 		setGeneratedContent("");
 
 		try {
-			const stream = streamPrd([
+			const stream = await streamPRD([
 				{ role: "user", content: submittedText },
 				{ role: "assistant", content: generatedContent },
 				{ role: "user", content: revision },
 			]);
+			if (!stream) return;
 			for await (const chunk of stream) {
 				setGeneratedContent((prev) => prev + chunk);
 			}
