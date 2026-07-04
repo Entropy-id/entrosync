@@ -89,7 +89,20 @@ function ProjectDetailPage() {
   }, [description, project.id, project.description, updateProjectFn]);
 
   // Properties editable state
-  const [priority, setPriority] = useState("Medium"); // local only – no Project.priority field
+  const apiStatusToDisplay = (s: string) => {
+    if (s === "PENDING") return "Not Started";
+    if (s === "ON_PROGRESS") return "In Progress";
+    if (s === "DONE") return "Completed";
+    return "Not Started";
+  };
+  const displayStatusToApi = (s: string) => {
+    if (s === "Not Started") return "PENDING";
+    if (s === "In Progress") return "ON_PROGRESS";
+    if (s === "Completed") return "DONE";
+    return "PENDING";
+  };
+
+  const [status, setStatus] = useState(apiStatusToDisplay(project.status));
   const [startDate, setStartDate] = useState(
     formatDisplayDate(project.milestones[0]?.startDate || project.createdAt),
   );
@@ -98,7 +111,7 @@ function ProjectDetailPage() {
   );
 
   const [editingProperty, setEditingProperty] = useState<
-    "priority" | "startDate" | "targetDate" | null
+    "status" | "startDate" | "targetDate" | null
   >(null);
 
   const startDateRef = useRef<HTMLInputElement>(null);
@@ -106,7 +119,32 @@ function ProjectDetailPage() {
 
   function handleSaveProperty() {
     setEditingProperty(null);
-    // TODO: call API to persist change
+    if (editingProperty === "status") {
+      updateProjectFn({
+        data: {
+          id: project.id,
+          status: displayStatusToApi(status),
+        },
+      });
+    }
+    if (editingProperty === "startDate") {
+      console.log(`Start Date: ${startDate}`);
+      updateProjectFn({
+        data: {
+          id: project.id,
+          startDate: startDate,
+        },
+      });
+    }
+    if (editingProperty === "targetDate") {
+      console.log(`Target Date: ${targetDate}`);
+      updateProjectFn({
+        data: {
+          id: project.id,
+          targetDate: targetDate,
+        },
+      });
+    }
   }
 
   // Milestones editable state
@@ -187,32 +225,10 @@ function ProjectDetailPage() {
     navigate({ to: "/dashboard/admin", search: { tab: "Projects" } });
   }
 
-  function getPriorityStyle(p: string) {
-    if (p === "High") return "bg-red-500 text-white";
-    if (p === "Medium") return "bg-yellow-500 text-black";
-    return "bg-emerald-500 text-white";
-  }
-
-  function parseDisplayDate(display: string): string {
-    const match = display.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
-    if (!match) return "";
-    const [, day, monthStr, year] = match;
-    const months: Record<string, string> = {
-      January: "01",
-      February: "02",
-      March: "03",
-      April: "04",
-      May: "05",
-      June: "06",
-      July: "07",
-      August: "08",
-      September: "09",
-      October: "10",
-      November: "11",
-      December: "12",
-    };
-    const month = months[monthStr] || "01";
-    return `${year}-${month}-${day.padStart(2, "0")}`;
+  function getStatusStyle(s: string) {
+    if (s === "In Progress") return "bg-sky-500 text-white";
+    if (s === "Completed") return "bg-emerald-500 text-white";
+    return "bg-neutral-700 text-gray-100";
   }
 
   function formatDisplayDate(iso: string | null): string {
@@ -558,35 +574,37 @@ function ProjectDetailPage() {
                   </h3>
                 </div>
                 <div className="space-y-4">
-                  {/* Priority */}
+                  {/* Status */}
                   <div className="flex items-center justify-between relative">
-                    <span className="text-sm text-gray-100/50">Priority</span>
+                    <span className="text-sm text-gray-100/50">Status</span>
                     <div className="relative">
-                      {editingProperty === "priority" ? (
+                      {editingProperty === "status" ? (
                         <div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-[100px]">
-                          {(["High", "Medium", "Low"] as const).map((p) => (
+                          {(
+                            ["Not Started", "In Progress", "Completed"] as const
+                          ).map((s) => (
                             <button
-                              key={p}
+                              key={s}
                               onClick={() => {
-                                setPriority(p);
+                                setStatus(s);
                                 handleSaveProperty();
                               }}
                               className={`w-full text-left text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
-                                priority === p
-                                  ? `${getPriorityStyle(p)} opacity-90`
+                                status === s
+                                  ? `${getStatusStyle(s)} opacity-90`
                                   : "text-gray-100 hover:bg-neutral-800"
                               }`}
                             >
-                              {p}
+                              {s}
                             </button>
                           ))}
                         </div>
                       ) : null}
                       <button
-                        onClick={() => setEditingProperty("priority")}
-                        className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${getPriorityStyle(priority)}`}
+                        onClick={() => setEditingProperty("status")}
+                        className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${getStatusStyle(status)}`}
                       >
-                        {priority}
+                        {status}
                       </button>
                     </div>
                   </div>
@@ -598,14 +616,18 @@ function ProjectDetailPage() {
                       <input
                         ref={startDateRef}
                         type="date"
-                        value={parseDisplayDate(startDate)}
+                        value={startDate}
                         onChange={(e) => {
                           const iso = e.target.value;
-                          if (iso) setStartDate(formatDisplayDate(iso));
+                          if (iso) {
+                            setStartDate(formatDisplayDate(iso));
+                            setEditingProperty("startDate");
+                            handleSaveProperty();
+                          }
                         }}
-                        onBlur={handleSaveProperty}
+                        onBlur={() => setEditingProperty("startDate")}
                         autoFocus
-                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 [color-scheme:dark]"
+                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 scheme-dark"
                       />
                     ) : (
                       <button
@@ -618,7 +640,7 @@ function ProjectDetailPage() {
                         }}
                         className="text-sm text-gray-100 hover:underline"
                       >
-                        {startDate}
+                        {startDate || "—"}
                       </button>
                     )}
                   </div>
@@ -630,14 +652,18 @@ function ProjectDetailPage() {
                       <input
                         ref={targetDateRef}
                         type="date"
-                        value={parseDisplayDate(targetDate)}
+                        value={targetDate}
                         onChange={(e) => {
                           const iso = e.target.value;
-                          if (iso) setTargetDate(formatDisplayDate(iso));
+                          if (iso) {
+                            setTargetDate(formatDisplayDate(iso));
+                            setEditingProperty("targetDate");
+                            handleSaveProperty();
+                          }
                         }}
-                        onBlur={handleSaveProperty}
+                        onBlur={() => setEditingProperty("targetDate")}
                         autoFocus
-                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 [color-scheme:dark]"
+                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 scheme-dark"
                       />
                     ) : (
                       <button
@@ -650,7 +676,7 @@ function ProjectDetailPage() {
                         }}
                         className="text-sm text-gray-100 hover:underline"
                       >
-                        {targetDate}
+                        {targetDate || "—"}
                       </button>
                     )}
                   </div>

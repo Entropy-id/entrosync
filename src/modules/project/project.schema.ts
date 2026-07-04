@@ -1,3 +1,4 @@
+import { start } from "node:repl";
 import { z } from "zod";
 
 export const ProjectStatus = z.enum(["PENDING", "ON_PROGRESS", "DONE"]);
@@ -20,6 +21,8 @@ export const updateProjectSchema = z.object({
   description: z.string().optional(),
   status: ProjectStatus.optional(),
   progress: z.string().optional(),
+  startDate: z.coerce.date().optional(),
+  dueDate: z.coerce.date().optional(),
 });
 
 export const projectByIdSchema = z.object({
@@ -36,6 +39,14 @@ export const createMilestoneSchema = z.object({
 export const updateMilestoneStatusSchema = z.object({
   id: z.string().uuid(),
   status: MilestoneStatus,
+});
+
+export const updateMilestoneSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1).optional(),
+  startDate: z.coerce.date().optional(),
+  dueDate: z.coerce.date().optional(),
+  status: MilestoneStatus.optional(),
 });
 
 export const milestoneByProjectSchema = z.object({

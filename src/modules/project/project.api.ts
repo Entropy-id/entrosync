@@ -8,6 +8,7 @@ import {
   milestoneByProjectSchema,
   projectByIdSchema,
   projectByTitleSchema,
+  updateMilestoneSchema,
   updateMilestoneStatusSchema,
   updateProjectSchema,
   updateTaskStatusSchema,
@@ -277,13 +278,25 @@ export const createMilestone = createServerFn({
  */
 export const updateMilestoneStatus = createServerFn({
   method: "POST",
+}).handler(async ({ data }) => {
+  const { id, status } = updateMilestoneStatusSchema.parse(data);
+  const milestone = await prisma.milestone.update({
+    where: { id },
+    data: { status },
+    include: { tasks: true },
+  });
+  return serializeMilestone(milestone);
+});
+
+export const updateMilestone = createServerFn({
+  method: "POST",
 })
-  .validator((input) => updateMilestoneStatusSchema.parse(input))
+  .validator((input) => updateMilestoneSchema.parse(input))
   .handler(async ({ data }) => {
-    const { id, status } = updateMilestoneStatusSchema.parse(data);
+    const { id, ...rest } = data;
     const milestone = await prisma.milestone.update({
       where: { id },
-      data: { status },
+      data: rest,
       include: { tasks: true },
     });
     return serializeMilestone(milestone);

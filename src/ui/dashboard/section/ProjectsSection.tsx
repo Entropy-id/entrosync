@@ -10,6 +10,8 @@ interface ProjectRow {
   description?: string | null;
   status: string;
   progress: string;
+  startDate?: string | null;
+  dueDate?: string | null;
   createdAt: string;
   updatedAt: string;
   milestones: {
@@ -130,11 +132,10 @@ export function ProjectsSection() {
                 (sum, m) => sum + m.tasks.length,
                 0,
               );
-              const lastMilestone =
-                project.milestones[project.milestones.length - 1];
-              const targetDate = lastMilestone
-                ? formatDate(lastMilestone.dueDate)
-                : formatDate(project.createdAt);
+
+              const targetDate = project.dueDate
+                ? formatDate(project.dueDate)
+                : "-";
 
               return (
                 <tr
