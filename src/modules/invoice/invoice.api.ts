@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { Prisma } from "#/generated/prisma/client";
-import { prisma } from "#/lib/db";
+import { prisma } from "#/utils/prisma";
 import { toISOString, toNumber } from "#/lib/serialize";
 import {
   createInvoiceSchema,
@@ -37,47 +37,43 @@ export const getInvoices = createServerFn({
   return invoices.map(serializeInvoice);
 });
 
-export const getInvoiceById = createServerFn({
-  method: "GET",
-}).handler(async ({ data }) => {
-  const { id } = invoiceByIdSchema.parse(data);
-  const invoice = await prisma.invoice.findUnique({
-    where: { id },
-    include: { project: { select: { id: true, title: true } } },
+export const getInvoiceById = createServerFn({ method: "GET" })
+  .validator(invoiceByIdSchema)
+  .handler(async ({ data }) => {
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: data.id },
+      include: { project: { select: { id: true, title: true } } },
+    });
+    return serializeInvoice(invoice);
   });
-  return serializeInvoice(invoice);
-});
 
-export const createInvoice = createServerFn({
-  method: "POST",
-}).handler(async ({ data }) => {
-  const parsed = createInvoiceSchema.parse(data);
-  const invoice = await prisma.invoice.create({
-    data: parsed,
-    include: { project: { select: { id: true, title: true } } },
+export const createInvoice = createServerFn({ method: "POST" })
+  .validator(createInvoiceSchema)
+  .handler(async ({ data }) => {
+    const invoice = await prisma.invoice.create({
+      data,
+      include: { project: { select: { id: true, title: true } } },
+    });
+    return serializeInvoice(invoice);
   });
-  return serializeInvoice(invoice);
-});
 
-export const updateInvoiceStatus = createServerFn({
-  method: "POST",
-}).handler(async ({ data }) => {
-  const { id, status } = updateInvoiceStatusSchema.parse(data);
-  const invoice = await prisma.invoice.update({
-    where: { id },
-    data: { status },
-    include: { project: { select: { id: true, title: true } } },
+export const updateInvoiceStatus = createServerFn({ method: "POST" })
+  .validator(updateInvoiceStatusSchema)
+  .handler(async ({ data }) => {
+    const invoice = await prisma.invoice.update({
+      where: { id: data.id },
+      data: { status: data.status },
+      include: { project: { select: { id: true, title: true } } },
+    });
+    return serializeInvoice(invoice);
   });
-  return serializeInvoice(invoice);
-});
 
-export const deleteInvoice = createServerFn({
-  method: "POST",
-}).handler(async ({ data }) => {
-  const { id } = invoiceByIdSchema.parse(data);
-  const invoice = await prisma.invoice.delete({
-    where: { id },
-    include: { project: { select: { id: true, title: true } } },
+export const deleteInvoice = createServerFn({ method: "POST" })
+  .validator(invoiceByIdSchema)
+  .handler(async ({ data }) => {
+    const invoice = await prisma.invoice.delete({
+      where: { id: data.id },
+      include: { project: { select: { id: true, title: true } } },
+    });
+    return serializeInvoice(invoice);
   });
-  return serializeInvoice(invoice);
-});
