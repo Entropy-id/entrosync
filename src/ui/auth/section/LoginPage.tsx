@@ -3,7 +3,7 @@ import { LoginForm } from "../components/LoginForm";
 import { AuthLayout } from "../layouts/AuthLayout";
 
 interface LoginPageProps {
-	onToggle: () => void
+	onToggle: () => void;
 }
 
 export function LoginPage({ onToggle }: LoginPageProps) {

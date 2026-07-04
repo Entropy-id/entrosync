@@ -15,7 +15,8 @@ export function StepThree({ onGetStarted }: StepThreeProps) {
 						One-Click Invoice Generator
 					</h1>
 					<p className="text-gray-400 text-lg leading-relaxed">
-						Eliminate the administrative burden. Define your project milestones once, and let EntroSync handle the billing automatically.
+						Eliminate the administrative burden. Define your project milestones
+						once, and let EntroSync handle the billing automatically.
 					</p>
 				</div>
 
