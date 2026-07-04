@@ -55,6 +55,10 @@ export const updateTaskStatusSchema = z.object({
   status: TaskStatus,
 });
 
+export const projectByTitleSchema = z.object({
+  title: z.string().min(1),
+});
+
 export const createProjectWithPrdSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),

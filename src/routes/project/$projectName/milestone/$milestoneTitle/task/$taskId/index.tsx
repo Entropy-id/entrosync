@@ -1,5 +1,6 @@
 import { getSessionServerFn } from "#/modules/auth/auth.api";
-import { getProjectBySlug, slugify } from "#/modules/project/project.mock";
+import { getProjectByTitle } from "#/modules/project/project.api";
+import { slugify } from "#/modules/project/project.mock";
 import type { Section } from "#/routes/dashboard/admin";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
@@ -9,8 +10,9 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
-import { useState, useRef } from "react";
+import { Pencil, Plus } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { useState, useRef, useCallback } from "react";
 
 export const Route = createFileRoute(
   "/project/$projectName/milestone/$milestoneTitle/task/$taskId/",
@@ -23,18 +25,33 @@ export const Route = createFileRoute(
     }
     return session;
   },
-  loader: ({ params }) => {
-    const project = getProjectBySlug(params.projectName);
+  loader: async ({ params }) => {
+    const project = await getProjectByTitle({
+      data: { title: params.projectName },
+    });
     if (!project) throw notFound();
     const milestone = project.milestones.find(
       (m) => slugify(m.title) === params.milestoneTitle,
     );
     if (!milestone) throw notFound();
-    const task = milestone.taskList.find((t) => t.id === params.taskId);
+    const task = milestone.tasks.find((t) => t.id === params.taskId);
     if (!task) throw notFound();
     return { project, milestone, task };
   },
 });
+
+function apiStatusToDisplay(status: string): string {
+  switch (status) {
+    case "PENDING":
+      return "Not Started";
+    case "IN_PROGRESS":
+      return "In Progress";
+    case "DONE":
+      return "Completed";
+    default:
+      return "Not Started";
+  }
+}
 
 function getStatusStyle(status: string) {
   switch (status) {
@@ -84,9 +101,11 @@ function parseDisplayDate(display: string): string {
   return `${year}-${month}-${day.padStart(2, "0")}`;
 }
 
-function formatDisplayDate(iso: string): string {
+function formatDisplayDate(iso: string | null): string {
   if (!iso) return "";
-  const [year, month, day] = iso.split("-");
+  const datePart = iso.includes("T") ? iso.slice(0, 10) : iso;
+  const [year, month, day] = datePart.split("-");
+  if (!year || !month || !day) return "";
   const months = [
     "January",
     "February",
@@ -109,16 +128,29 @@ function TaskDetailPage() {
   const { project, milestone, task } = Route.useLoaderData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Local editable state
-  const [subTasks, setSubTasks] = useState(task.subTasks);
-  const [showCreateSubTask, setShowCreateSubTask] = useState(false);
-  const [draftSubTask, setDraftSubTask] = useState("");
+  // Editable title & description
+  const [name, setName] = useState(task.title);
+  const [description, setDescription] = useState(task.description || "");
+  const [editingName, setEditingName] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const descTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSaveName = useCallback(() => {
+    setEditingName(false);
+    // TODO: call API to persist change
+  }, []);
+
+  const handleSaveDescription = useCallback(() => {
+    setEditingDesc(false);
+    // TODO: call API to persist change
+  }, []);
 
   // Properties editable state
-  const [status, setStatus] = useState(task.status);
-  const [priority, setPriority] = useState(task.priority);
-  const [startDate, setStartDate] = useState(task.startDate);
-  const [dueDate, setDueDate] = useState(task.dueDate);
+  const [status, setStatus] = useState(apiStatusToDisplay(task.status));
+  const [priority, setPriority] = useState("Medium"); // local only – no Task.priority field
+  const [startDate, setStartDate] = useState(formatDisplayDate(task.startDate));
+  const [dueDate, setDueDate] = useState(formatDisplayDate(task.dueDate));
 
   const [editingProperty, setEditingProperty] = useState<
     "status" | "priority" | "startDate" | "dueDate" | null
@@ -132,6 +164,11 @@ function TaskDetailPage() {
     // TODO: call API to persist change
   }
 
+  // Sub-Tasks (local only – no sub-task table in schema)
+  const [subTasks, setSubTasks] = useState<string[]>([]);
+  const [showCreateSubTask, setShowCreateSubTask] = useState(false);
+  const [draftSubTask, setDraftSubTask] = useState("");
+
   function handleChangeSection(_section: Section) {
     navigate({ to: "/dashboard/admin", search: { tab: "Projects" } });
   }
@@ -141,7 +178,7 @@ function TaskDetailPage() {
     setSubTasks((prev) => [...prev, draftSubTask.trim()]);
     setDraftSubTask("");
     setShowCreateSubTask(false);
-    // TODO: call API to persist change
+    // TODO: call API to persist change (sub-tasks not supported yet)
   }
 
   function handleCancelSubTask() {
@@ -180,12 +217,12 @@ function TaskDetailPage() {
               onClick={() =>
                 navigate({
                   to: "/project/$projectName",
-                  params: { projectName: slugify(project.name) },
+                  params: { projectName: slugify(project.title) },
                 })
               }
               className="hover:text-gray-100 transition-colors"
             >
-              {project.name}
+              {project.title}
             </button>
             <span className="mx-1">&gt;</span>
             <button
@@ -193,7 +230,7 @@ function TaskDetailPage() {
                 navigate({
                   to: "/project/$projectName/milestone/$milestoneTitle",
                   params: {
-                    projectName: slugify(project.name),
+                    projectName: slugify(project.title),
                     milestoneTitle: slugify(milestone.title),
                   },
                 })
@@ -202,6 +239,8 @@ function TaskDetailPage() {
             >
               {milestone.title}
             </button>
+            <span className="mx-1">&gt;</span>
+            <span className="text-gray-100 font-medium">{name}</span>
           </nav>
         </div>
 
@@ -210,13 +249,86 @@ function TaskDetailPage() {
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left column */}
             <div className="flex-1 min-w-0">
-              {/* Title */}
-              <h1 className="text-3xl font-bold mb-3">{task.name}</h1>
+              {/* Editable title */}
+              <div className="group flex items-center gap-3 mb-4">
+                {editingName ? (
+                  <input
+                    ref={nameInputRef}
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={handleSaveName}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveName();
+                    }}
+                    autoFocus
+                    className="bg-transparent text-3xl font-bold text-gray-100 outline-none border-b border-neutral-700 focus:border-sky-500 w-full pb-1"
+                  />
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-bold">{name}</h1>
+                    <button
+                      onClick={() => {
+                        setEditingName(true);
+                        setTimeout(() => nameInputRef.current?.focus(), 0);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100 transition-all"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  </>
+                )}
+              </div>
 
-              {/* Description */}
-              <p className="text-sm text-gray-100/70 leading-6 mb-8 max-w-2xl">
-                {task.description}
-              </p>
+              {/* Editable description */}
+              <div className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-base font-semibold text-gray-100">
+                    Description
+                  </h2>
+                  {!editingDesc && (
+                    <button
+                      onClick={() => {
+                        setEditingDesc(true);
+                        setTimeout(() => descTextareaRef.current?.focus(), 0);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100 transition-colors"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {editingDesc ? (
+                  <div className="space-y-3">
+                    <textarea
+                      ref={descTextareaRef}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={10}
+                      className="w-full bg-zinc-900/80 border border-neutral-700 rounded-xl p-4 text-sm text-gray-100 outline-none focus:border-sky-500 resize-y font-mono leading-6"
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSaveDescription}
+                        className="bg-white text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingDesc(false)}
+                        className="text-sm text-gray-100/50 hover:text-gray-100 px-4 py-2"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose prose-invert prose-sm max-w-none text-gray-100/70 leading-7">
+                    <ReactMarkdown>{description}</ReactMarkdown>
+                  </div>
+                )}
+              </div>
 
               {/* Sub-Tasks */}
               <div>
@@ -287,14 +399,9 @@ function TaskDetailPage() {
                     <span className="text-sm text-gray-100/50">Status</span>
                     <div className="relative">
                       {editingProperty === "status" ? (
-                        <div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-25">
+                        <div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-[100px]">
                           {(
-                            [
-                              "Not Started",
-                              "In Progress",
-                              "Completed",
-                              "Review",
-                            ] as const
+                            ["Not Started", "In Progress", "Completed"] as const
                           ).map((s) => (
                             <button
                               key={s}
@@ -327,7 +434,7 @@ function TaskDetailPage() {
                     <span className="text-sm text-gray-100/50">Priority</span>
                     <div className="relative">
                       {editingProperty === "priority" ? (
-                        <div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-25">
+                        <div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-[100px]">
                           {(["High", "Medium", "Low"] as const).map((p) => (
                             <button
                               key={p}
@@ -369,7 +476,7 @@ function TaskDetailPage() {
                         }}
                         onBlur={handleSaveProperty}
                         autoFocus
-                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 scheme-dark"
+                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 [color-scheme:dark]"
                       />
                     ) : (
                       <button
@@ -382,7 +489,7 @@ function TaskDetailPage() {
                         }}
                         className="text-sm text-gray-100 hover:underline"
                       >
-                        {startDate}
+                        {startDate || "—"}
                       </button>
                     )}
                   </div>
@@ -401,7 +508,7 @@ function TaskDetailPage() {
                         }}
                         onBlur={handleSaveProperty}
                         autoFocus
-                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 scheme-dark"
+                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 [color-scheme:dark]"
                       />
                     ) : (
                       <button
@@ -411,7 +518,7 @@ function TaskDetailPage() {
                         }}
                         className="text-sm text-gray-100 hover:underline"
                       >
-                        {dueDate}
+                        {dueDate || "—"}
                       </button>
                     )}
                   </div>

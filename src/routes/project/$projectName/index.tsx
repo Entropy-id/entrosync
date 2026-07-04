@@ -1,5 +1,10 @@
 import { getSessionServerFn } from "#/modules/auth/auth.api";
-import { getProjectBySlug, slugify } from "#/modules/project/project.mock";
+import {
+  getProjectByTitle,
+  updateProject,
+} from "#/modules/project/project.api";
+import { slugify } from "#/modules/project/project.mock";
+import { useServerFn } from "@tanstack/react-start";
 import type { Section } from "#/routes/dashboard/admin";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
@@ -22,8 +27,10 @@ export const Route = createFileRoute("/project/$projectName/")({
     }
     return session;
   },
-  loader: ({ params }) => {
-    const project = getProjectBySlug(params.projectName);
+  loader: async ({ params }) => {
+    const project = await getProjectByTitle({
+      data: { title: params.projectName },
+    });
     if (!project) throw notFound();
     return { project };
   },
@@ -34,29 +41,61 @@ function ProjectDetailPage() {
   const { project } = Route.useLoaderData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Editable state (local only for mock data)
-  const [name, setName] = useState(project.name);
-  const [description, setDescription] = useState(project.description);
+  // Editable state (local only until update API is wired)
+  const [name, setName] = useState(project.title);
+  const [description, setDescription] = useState(project.description || "");
   const [editingName, setEditingName] = useState(false);
   const [editingDesc, setEditingDesc] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement>(null);
   const descTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleSaveName = useCallback(() => {
-    setEditingName(false);
-    // TODO: call API to persist change
-  }, []);
+  const updateProjectFn = useServerFn(updateProject);
 
-  const handleSaveDescription = useCallback(() => {
+  const handleSaveName = useCallback(async () => {
+    setEditingName(false);
+    if (name === project.title) return;
+    try {
+      await updateProjectFn({
+        data: {
+          id: project.id,
+          title: name,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update project name", error);
+      setName(project.title);
+    }
+  }, [name, project.id, project.title, updateProjectFn]);
+
+  const handleSaveDescription = useCallback(async () => {
     setEditingDesc(false);
-    // TODO: call API to persist change
-  }, []);
+    console.log(
+      `Description: ${description}, project.description: ${project.description}`,
+    );
+    if (description === project.description) return;
+    try {
+      console.log("Try to update project");
+      await updateProjectFn({
+        data: {
+          id: project.id,
+          description: description,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update project description", error);
+      setDescription(project.description ?? "");
+    }
+  }, [description, project.id, project.description, updateProjectFn]);
 
   // Properties editable state
-  const [priority, setPriority] = useState(project.priority);
-  const [startDate, setStartDate] = useState(project.startDate);
-  const [targetDate, setTargetDate] = useState(project.targetDate);
+  const [priority, setPriority] = useState("Medium"); // local only – no Project.priority field
+  const [startDate, setStartDate] = useState(
+    formatDisplayDate(project.milestones[0]?.startDate || project.createdAt),
+  );
+  const [targetDate, setTargetDate] = useState(
+    formatDisplayDate(project.milestones.at(-1)?.dueDate ?? null),
+  );
 
   const [editingProperty, setEditingProperty] = useState<
     "priority" | "startDate" | "targetDate" | null
@@ -79,8 +118,20 @@ function ProjectDetailPage() {
     completion: string;
   };
 
+  function computeMilestoneCompletion(tasks: { status: string }[]): string {
+    if (tasks.length === 0) return "0%";
+    const done = tasks.filter((t) => t.status === "DONE").length;
+    return `${Math.round((done / tasks.length) * 100)}%`;
+  }
+
   const [milestones, setMilestones] = useState<MilestoneDraft[]>(
-    project.milestones.map((m) => ({ ...m })),
+    project.milestones.map((m) => ({
+      title: m.title,
+      description: "", // real milestones have no description field
+      date: formatDisplayDate(m.dueDate),
+      tasks: m.tasks.length,
+      completion: computeMilestoneCompletion(m.tasks),
+    })),
   );
   const [editingMilestoneId, setEditingMilestoneId] = useState<
     number | "new" | null
@@ -164,9 +215,11 @@ function ProjectDetailPage() {
     return `${year}-${month}-${day.padStart(2, "0")}`;
   }
 
-  function formatDisplayDate(iso: string): string {
+  function formatDisplayDate(iso: string | null): string {
     if (!iso) return "";
-    const [year, month, day] = iso.split("-");
+    const datePart = iso.includes("T") ? iso.slice(0, 10) : iso;
+    const [year, month, day] = datePart.split("-");
+    if (!year || !month || !day) return "";
     const months = [
       "January",
       "February",
@@ -256,11 +309,11 @@ function ProjectDetailPage() {
                 <span className="text-sm text-gray-100/50">Resources</span>
                 {project.resources.map((r) => (
                   <span
-                    key={r.name}
+                    key={r.id}
                     className="inline-flex items-center gap-2 text-sm text-gray-100 bg-neutral-800/60 px-3 py-1.5 rounded-lg"
                   >
                     <FileText size={14} />
-                    {r.name}
+                    {r.title}
                   </span>
                 ))}
                 <button
@@ -295,7 +348,9 @@ function ProjectDetailPage() {
                     <textarea
                       ref={descTextareaRef}
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                      }}
                       rows={10}
                       className="w-full bg-zinc-900/80 border border-neutral-700 rounded-xl p-4 text-sm text-gray-100 outline-none focus:border-sky-500 resize-y font-mono leading-6"
                     />
@@ -428,7 +483,7 @@ function ProjectDetailPage() {
                             navigate({
                               to: "/project/$projectName/milestone/$milestoneTitle",
                               params: {
-                                projectName: slugify(project.name),
+                                projectName: slugify(project.title),
                                 milestoneTitle: slugify(m.title),
                               },
                             })
@@ -629,7 +684,10 @@ function ProjectDetailPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-100/50">Total Task</span>
                     <span className="text-sm text-gray-100 font-medium">
-                      {project.progress.totalTask}
+                      {project.milestones.reduce(
+                        (sum, m) => sum + m.tasks.length,
+                        0,
+                      )}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -638,7 +696,11 @@ function ProjectDetailPage() {
                       <span className="text-sm text-gray-100/50">Started</span>
                     </div>
                     <span className="text-sm text-gray-100 font-medium">
-                      {project.progress.started}
+                      {
+                        project.milestones
+                          .flatMap((m) => m.tasks)
+                          .filter((t) => t.status === "IN_PROGRESS").length
+                      }
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -649,7 +711,11 @@ function ProjectDetailPage() {
                       </span>
                     </div>
                     <span className="text-sm text-gray-100 font-medium">
-                      {project.progress.completed}
+                      {
+                        project.milestones
+                          .flatMap((m) => m.tasks)
+                          .filter((t) => t.status === "DONE").length
+                      }
                     </span>
                   </div>
                 </div>

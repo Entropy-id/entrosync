@@ -1,30 +1,91 @@
 import { useNavigate } from "@tanstack/react-router";
-import {
-  getAllProjects,
-  slugify,
-  type Project,
-} from "#/modules/project/project.mock";
+import { getProjects } from "#/modules/project/project.api";
+import { slugify } from "#/modules/project/project.mock";
+import { useServerFn } from "@tanstack/react-start";
+import { useState, useEffect } from "react";
 
-function getPriorityStyle(priority: Project["priority"]) {
-  switch (priority) {
-    case "High":
-      return "bg-red-500 text-white";
-    case "Medium":
+interface ProjectRow {
+  id: string;
+  title: string;
+  description?: string | null;
+  status: string;
+  progress: string;
+  createdAt: string;
+  updatedAt: string;
+  milestones: {
+    id: string;
+    title: string;
+    status: string;
+    startDate: string;
+    dueDate: string;
+    tasks: { id: string; title: string; status: string }[];
+  }[];
+}
+
+function getPriorityStyle(_status: string) {
+  // Map project status to a color badge
+  switch (_status) {
+    case "ON_PROGRESS":
       return "bg-yellow-500 text-black";
-    case "Low":
+    case "DONE":
       return "bg-emerald-500 text-white";
     default:
       return "bg-neutral-700 text-gray-100";
   }
 }
 
+function getPriorityLabel(status: string) {
+  switch (status) {
+    case "ON_PROGRESS":
+      return "In Progress";
+    case "DONE":
+      return "Completed";
+    default:
+      return "Pending";
+  }
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
 export function ProjectsSection() {
   const navigate = useNavigate();
-  const projects = getAllProjects();
+  const getProjectsFn = useServerFn(getProjects);
+  const [projects, setProjects] = useState<ProjectRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getProjectsFn()
+      .then((data) => setProjects(data as ProjectRow[]))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [getProjectsFn]);
 
   function handleRowClick(name: string) {
     const slug = slugify(name);
     navigate({ to: "/project/$projectName", params: { projectName: slug } });
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <span className="text-sm text-gray-100/50">Loading projects...</span>
+      </div>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <span className="text-sm text-gray-100/50">No projects found.</span>
+      </div>
+    );
   }
 
   return (
@@ -64,25 +125,37 @@ export function ProjectsSection() {
             </tr>
           </thead>
           <tbody>
-            {projects.map((project) => (
-              <tr
-                key={project.id}
-                onClick={() => handleRowClick(project.name)}
-                className="border-b border-neutral-800/40 text-sm text-gray-100/80 cursor-pointer hover:bg-neutral-800/40 transition-colors"
-              >
-                <td className="py-4 px-4">{project.name}</td>
-                <td className="py-4 px-4">
-                  <span
-                    className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${getPriorityStyle(project.priority)}`}
-                  >
-                    {project.priority}
-                  </span>
-                </td>
-                <td className="py-4 px-4">{project.targetDate}</td>
-                <td className="py-4 px-4">{project.tasks}</td>
-                <td className="py-4 px-4">{project.status}</td>
-              </tr>
-            ))}
+            {projects.map((project) => {
+              const totalTasks = project.milestones.reduce(
+                (sum, m) => sum + m.tasks.length,
+                0,
+              );
+              const lastMilestone =
+                project.milestones[project.milestones.length - 1];
+              const targetDate = lastMilestone
+                ? formatDate(lastMilestone.dueDate)
+                : formatDate(project.createdAt);
+
+              return (
+                <tr
+                  key={project.id}
+                  onClick={() => handleRowClick(project.title)}
+                  className="border-b border-neutral-800/40 text-sm text-gray-100/80 cursor-pointer hover:bg-neutral-800/40 transition-colors"
+                >
+                  <td className="py-4 px-4">{project.title}</td>
+                  <td className="py-4 px-4">
+                    <span
+                      className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${getPriorityStyle(project.status)}`}
+                    >
+                      {getPriorityLabel(project.status)}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">{targetDate}</td>
+                  <td className="py-4 px-4">{totalTasks}</td>
+                  <td className="py-4 px-4">{project.progress}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

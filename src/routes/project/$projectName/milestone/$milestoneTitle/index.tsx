@@ -1,5 +1,6 @@
 import { getSessionServerFn } from "#/modules/auth/auth.api";
-import { getProjectBySlug, slugify } from "#/modules/project/project.mock";
+import { getProjectByTitle } from "#/modules/project/project.api";
+import { slugify } from "#/modules/project/project.mock";
 import type { Section } from "#/routes/dashboard/admin";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
@@ -23,8 +24,10 @@ export const Route = createFileRoute(
     }
     return session;
   },
-  loader: ({ params }) => {
-    const project = getProjectBySlug(params.projectName);
+  loader: async ({ params }) => {
+    const project = await getProjectByTitle({
+      data: { title: params.projectName },
+    });
     if (!project) throw notFound();
     const milestone = project.milestones.find(
       (m) => slugify(m.title) === params.milestoneTitle,
@@ -34,14 +37,62 @@ export const Route = createFileRoute(
   },
 });
 
+function formatDisplayDate(iso: string | null): string {
+  if (!iso) return "";
+  const datePart = iso.includes("T") ? iso.slice(0, 10) : iso;
+  const [year, month, day] = datePart.split("-");
+  if (!year || !month || !day) return "";
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
+}
+
+function parseDisplayDate(display: string): string {
+  const match = display.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+  if (!match) return "";
+  const [, day, monthStr, year] = match;
+  const months: Record<string, string> = {
+    January: "01",
+    February: "02",
+    March: "03",
+    April: "04",
+    May: "05",
+    June: "06",
+    July: "07",
+    August: "08",
+    September: "09",
+    October: "10",
+    November: "11",
+    December: "12",
+  };
+  const month = months[monthStr] || "01";
+  return `${year}-${month}-${day.padStart(2, "0")}`;
+}
+
 function MilestoneDetailPage() {
   const navigate = useNavigate();
   const { project, milestone } = Route.useLoaderData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Local task state
+  // Local task state mapped from real data
   const [tasks, setTasks] = useState(
-    milestone.taskList.map((t, i) => ({ ...t, id: t.id || `ID-${i + 1}` })),
+    milestone.tasks.map((t) => ({
+      ...t,
+      name: t.title,
+      dueDate: formatDisplayDate(t.dueDate),
+    })),
   );
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [draftTask, setDraftTask] = useState({
@@ -61,65 +112,25 @@ function MilestoneDetailPage() {
       ...prev,
       {
         id: `ID-${nextId}`,
+        title: draftTask.name,
         name: draftTask.name,
         description: draftTask.description,
         dueDate: draftTask.dueDate,
         startDate: "",
-        status: "Not Started" as const,
-        priority: "Medium" as const,
-        subTasks: [],
+        status: "PENDING" as const,
+        milestoneId: milestone.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     ]);
     setDraftTask({ name: "", description: "", dueDate: "" });
     setShowCreateForm(false);
-    // TODO: call API to persist change
+    // TODO: call createTask API to persist change
   }
 
   function handleCancelCreate() {
     setDraftTask({ name: "", description: "", dueDate: "" });
     setShowCreateForm(false);
-  }
-
-  function parseDisplayDate(display: string): string {
-    const match = display.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
-    if (!match) return "";
-    const [, day, monthStr, year] = match;
-    const months: Record<string, string> = {
-      January: "01",
-      February: "02",
-      March: "03",
-      April: "04",
-      May: "05",
-      June: "06",
-      July: "07",
-      August: "08",
-      September: "09",
-      October: "10",
-      November: "11",
-      December: "12",
-    };
-    const month = months[monthStr] || "01";
-    return `${year}-${month}-${day.padStart(2, "0")}`;
-  }
-
-  function formatDisplayDate(iso: string): string {
-    if (!iso) return "";
-    const [year, month, day] = iso.split("-");
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
   }
 
   return (
@@ -153,12 +164,12 @@ function MilestoneDetailPage() {
               onClick={() =>
                 navigate({
                   to: "/project/$projectName",
-                  params: { projectName: slugify(project.name) },
+                  params: { projectName: slugify(project.title) },
                 })
               }
               className="hover:text-gray-100 transition-colors"
             >
-              {project.name}
+              {project.title}
             </button>
             <span className="mx-1">&gt;</span>
             <span className="text-gray-100 font-medium">{milestone.title}</span>
@@ -215,7 +226,7 @@ function MilestoneDetailPage() {
                       dueDate: formatDisplayDate(iso),
                     }));
                 }}
-                className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-40 scheme-dark"
+                className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-40 [color-scheme:dark]"
               />
               <div className="flex items-center gap-2">
                 <button
@@ -258,7 +269,7 @@ function MilestoneDetailPage() {
                       navigate({
                         to: "/project/$projectName/milestone/$milestoneTitle/task/$taskId",
                         params: {
-                          projectName: slugify(project.name),
+                          projectName: slugify(project.title),
                           milestoneTitle: slugify(milestone.title),
                           taskId: task.id,
                         },
