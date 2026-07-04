@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { Prisma } from "#/generated/prisma/client";
-import { prisma } from "#/lib/db";
+import { prisma } from "#/utils/prisma";
 import { toISOString, toNumber } from "#/lib/serialize";
 import {
   createInvoiceSchema,
