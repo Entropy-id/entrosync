@@ -31,4 +31,9 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
-          script: whoami
+          script: |
+            cd /home/akmalrizk/live/
+            git pull
+            /home/akmalrizk/.nvm/versions/node/v24.18.0/bin/npm ci
+            /home/akmalrizk/.nvm/versions/node/v24.18.0/bin/npm run build
+            /home/akmalrizk/.nvm/versions/node/v24.18.0/bin/pm2 restart entrosync

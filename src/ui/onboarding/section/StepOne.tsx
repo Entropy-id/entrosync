@@ -16,7 +16,9 @@ export function StepOne({ onNext, onSkip }: StepOneProps) {
 						Smart AI Briefing
 					</h1>
 					<p className="text-gray-400 text-lg leading-relaxed">
-						Our LLM layers extract complex project requirements directly from your informal chats. Transform casual conversations into professional, strctured project documents in seconds.
+						Our LLM layers extract complex project requirements directly from
+						your informal chats. Transform casual conversations into
+						professional, strctured project documents in seconds.
 					</p>
 				</div>
 
