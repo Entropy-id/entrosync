@@ -22,6 +22,11 @@ export function LoginForm({ onToggle }: LoginFormProps) {
 	async function handleLoginUser(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
 
+		if (loginData.password.length < 8) {
+			window.alert("Password must be at least 8 characters long!");
+			return;
+		}
+
 		try {
 			await loginServerFnHandler({
 				data: {
@@ -30,6 +35,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
 				},
 			});
 		} catch (error) {
+			window.alert("Invalid email or password!");
 			console.error("Login failed:", error);
 		}
 	}
@@ -56,7 +62,7 @@ export function LoginForm({ onToggle }: LoginFormProps) {
 				type="button"
 				className="w-full bg-white text-black font-medium py-2.5 rounded-full hover:bg-gray-200 transition-colors"
 			>
-				Continue with Google
+				Login with Google
 			</button>
 
 			{/* Divider */}

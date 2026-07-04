@@ -1,8 +1,8 @@
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import {
-	loginWithGoogleServerFn,
 	registerServerFn,
+	registerWithGoogleServerFn,
 } from "#/modules/auth/auth.api";
 import { InputField } from "./InputField";
 
@@ -12,7 +12,9 @@ interface RegisterFormProps {
 
 export function RegisterForm({ onToggle }: RegisterFormProps) {
 	const registerServerFnHandler = useServerFn(registerServerFn);
-	const loginWithGoogleServerFnHandler = useServerFn(loginWithGoogleServerFn);
+	const registerWithGoogleServerFnHandler = useServerFn(
+		registerWithGoogleServerFn,
+	);
 
 	const [registerData, setRegisterData] = useState({
 		name: "",
@@ -25,7 +27,7 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
 		e.preventDefault();
 
 		if (registerData.password !== registerData.confirmPassword) {
-			console.error("Passwords do not match!");
+			window.alert("Passwords do not match!");
 			return;
 		}
 
@@ -42,9 +44,9 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
 		}
 	}
 
-	async function handleLoginWithGoogle() {
+	async function handleRegisterWithGoogle() {
 		try {
-			await loginWithGoogleServerFnHandler();
+			await registerWithGoogleServerFnHandler();
 		} catch (error) {
 			console.error("Google login failed:", error);
 		}
@@ -60,11 +62,11 @@ export function RegisterForm({ onToggle }: RegisterFormProps) {
 
 			{/* Google Button */}
 			<button
-				onClick={handleLoginWithGoogle}
+				onClick={handleRegisterWithGoogle}
 				type="button"
 				className="w-full bg-white text-black font-medium py-2.5 rounded-full hover:bg-gray-200 transition-colors"
 			>
-				Continue with Google
+				Register with Google
 			</button>
 
 			{/* Divider */}
