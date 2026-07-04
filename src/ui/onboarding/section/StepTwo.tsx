@@ -16,10 +16,8 @@ export function StepTwo({ onNext, onBack }: StepTwoProps) {
 						Transparent Project Tracking
 					</h1>
 					<p className="text-gray-400 text-lg leading-relaxed">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit. Facere
-						distinctio repellendus facilis cupiditate consectetur, architecto
-						explicabo quae perspiciatis quos iusto delectus iure aspernatur,
-						animi saepe magni. Asperiores sint animi unde?
+						Never wonder about progress again. Our integrated{" "}
+						<b>Milestone Tracker</b> provides a live pulse on every deliverable.
 					</p>
 				</div>
 
@@ -33,11 +31,11 @@ export function StepTwo({ onNext, onBack }: StepTwoProps) {
 						</div>
 					</div>
 					<div className="w-full max-w-md space-y-3">
-						<OnboardingButton variant="secondary" onClick={onBack}>
-							Back
-						</OnboardingButton>
 						<OnboardingButton variant="primary" onClick={onNext}>
 							Next
+						</OnboardingButton>
+						<OnboardingButton variant="secondary" onClick={onBack}>
+							Back
 						</OnboardingButton>
 					</div>
 				</div>
