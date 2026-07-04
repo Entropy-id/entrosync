@@ -18,10 +18,11 @@ function OnboardingRouteComponent() {
 		setCurrentStep((prev) => prev - 1);
 	};
 	const handleSkip = () => {
+		setCurrentStep((prev) => prev + 2);
 		console.log("Skipped to the end!");
 	};
 	const handleGetStarted = () => {
-		router.navigate({ to: "/auth" });
+		router.navigate({ to: "/plan" });
 	};
 
 	return (
