@@ -64,6 +64,10 @@ function MilestoneDetailPage() {
         name: draftTask.name,
         description: draftTask.description,
         dueDate: draftTask.dueDate,
+        startDate: "",
+        status: "Not Started" as const,
+        priority: "Medium" as const,
+        subTasks: [],
       },
     ]);
     setDraftTask({ name: "", description: "", dueDate: "" });
@@ -250,6 +254,16 @@ function MilestoneDetailPage() {
                 {tasks.map((task) => (
                   <tr
                     key={task.id}
+                    onClick={() =>
+                      navigate({
+                        to: "/project/$projectName/milestone/$milestoneTitle/task/$taskId",
+                        params: {
+                          projectName: slugify(project.name),
+                          milestoneTitle: slugify(milestone.title),
+                          taskId: task.id,
+                        },
+                      })
+                    }
                     className="border-b border-neutral-800/40 text-sm text-gray-100/80 cursor-pointer hover:bg-neutral-800/40 transition-colors"
                   >
                     <td className="py-4 px-4">{task.id}</td>

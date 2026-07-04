@@ -19,6 +19,7 @@ import { Route as ProjectProjectNameIndexRouteImport } from './routes/project/$p
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/index'
+import { Route as ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/task/$taskId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +72,12 @@ const ProjectProjectNameMilestoneMilestoneTitleIndexRoute =
     path: '/project/$projectName/milestone/$milestoneTitle/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute =
+  ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport.update({
+    id: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/',
+    path: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/project/$projectName': typeof ProjectProjectNameIndexRoute
   '/project/$projectName/milestone/$milestoneTitle': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/task/$taskId': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -108,6 +117,7 @@ export interface FileRoutesById {
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/'
     | '/project/$projectName/'
     | '/project/$projectName/milestone/$milestoneTitle/'
+    | '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/project/$projectName'
     | '/project/$projectName/milestone/$milestoneTitle'
+    | '/project/$projectName/milestone/$milestoneTitle/task/$taskId'
   id:
     | '__root__'
     | '/'
@@ -146,6 +158,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin/'
     | '/project/$projectName/'
     | '/project/$projectName/milestone/$milestoneTitle/'
+    | '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -159,6 +172,7 @@ export interface RootRouteChildren {
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   ProjectProjectNameIndexRoute: typeof ProjectProjectNameIndexRoute
   ProjectProjectNameMilestoneMilestoneTitleIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -233,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': {
+      id: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
+      path: '/project/$projectName/milestone/$milestoneTitle/task/$taskId'
+      fullPath: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
+      preLoaderRoute: typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -248,6 +269,8 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectProjectNameIndexRoute: ProjectProjectNameIndexRoute,
   ProjectProjectNameMilestoneMilestoneTitleIndexRoute:
     ProjectProjectNameMilestoneMilestoneTitleIndexRoute,
+  ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute:
+    ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
