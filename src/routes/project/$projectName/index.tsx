@@ -1,5 +1,6 @@
 import { getSessionServerFn } from "#/modules/auth/auth.api";
-import { getProjectBySlug } from "#/modules/project/project.mock";
+import { getProjectBySlug, slugify } from "#/modules/project/project.mock";
+import type { Section } from "#/routes/dashboard/admin";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
 import {
@@ -8,26 +9,22 @@ import {
   redirect,
   useNavigate,
 } from "@tanstack/react-router";
-import { useState } from "react";
+import { FileText, Pencil, Plus } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { useState, useRef, useCallback } from "react";
 
 export const Route = createFileRoute("/project/$projectName/")({
   component: ProjectDetailPage,
   beforeLoad: async () => {
     const session = await getSessionServerFn();
-
     if (!session) {
-      throw redirect({
-        to: "/login",
-      });
+      throw redirect({ to: "/login" });
     }
-
     return session;
   },
   loader: ({ params }) => {
     const project = getProjectBySlug(params.projectName);
-    if (!project) {
-      throw notFound();
-    }
+    if (!project) throw notFound();
     return { project };
   },
 });
@@ -35,13 +32,156 @@ export const Route = createFileRoute("/project/$projectName/")({
 function ProjectDetailPage() {
   const navigate = useNavigate();
   const { project } = Route.useLoaderData();
-
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  function handleChangeSection(
-    _section: "Dashboard" | "Projects" | "Invoices",
-  ) {
+  // Editable state (local only for mock data)
+  const [name, setName] = useState(project.name);
+  const [description, setDescription] = useState(project.description);
+  const [editingName, setEditingName] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const descTextareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleSaveName = useCallback(() => {
+    setEditingName(false);
+    // TODO: call API to persist change
+  }, []);
+
+  const handleSaveDescription = useCallback(() => {
+    setEditingDesc(false);
+    // TODO: call API to persist change
+  }, []);
+
+  // Properties editable state
+  const [priority, setPriority] = useState(project.priority);
+  const [startDate, setStartDate] = useState(project.startDate);
+  const [targetDate, setTargetDate] = useState(project.targetDate);
+
+  const [editingProperty, setEditingProperty] = useState<
+    "priority" | "startDate" | "targetDate" | null
+  >(null);
+
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const targetDateRef = useRef<HTMLInputElement>(null);
+
+  function handleSaveProperty() {
+    setEditingProperty(null);
+    // TODO: call API to persist change
+  }
+
+  // Milestones editable state
+  type MilestoneDraft = {
+    title: string;
+    description: string;
+    date: string;
+    tasks: number;
+    completion: string;
+  };
+
+  const [milestones, setMilestones] = useState<MilestoneDraft[]>(
+    project.milestones.map((m) => ({ ...m })),
+  );
+  const [editingMilestoneId, setEditingMilestoneId] = useState<
+    number | "new" | null
+  >(null);
+  const [draftMilestone, setDraftMilestone] = useState<MilestoneDraft>({
+    title: "",
+    description: "",
+    date: "",
+    tasks: 0,
+    completion: "0%",
+  });
+
+  function handleCreateMilestone() {
+    setDraftMilestone({
+      title: "",
+      description: "",
+      date: "",
+      tasks: 0,
+      completion: "0%",
+    });
+    setEditingMilestoneId("new");
+  }
+
+  function handleEditMilestone(index: number) {
+    setDraftMilestone({ ...milestones[index] });
+    setEditingMilestoneId(index);
+  }
+
+  function handleSaveMilestone() {
+    if (!draftMilestone.title.trim()) return;
+    if (editingMilestoneId === "new") {
+      setMilestones((prev) => [...prev, draftMilestone]);
+    } else if (editingMilestoneId !== null) {
+      setMilestones((prev) =>
+        prev.map((m, i) => (i === editingMilestoneId ? draftMilestone : m)),
+      );
+    }
+    setEditingMilestoneId(null);
+    // TODO: call API to persist change
+  }
+
+  function handleDeleteMilestone(index: number) {
+    setMilestones((prev) => prev.filter((_, i) => i !== index));
+    if (editingMilestoneId === index) setEditingMilestoneId(null);
+    // TODO: call API to persist change
+  }
+
+  function handleCancelMilestone() {
+    setEditingMilestoneId(null);
+  }
+
+  function handleChangeSection(_section: Section) {
     navigate({ to: "/dashboard/admin", search: { tab: "Projects" } });
+  }
+
+  function getPriorityStyle(p: string) {
+    if (p === "High") return "bg-red-500 text-white";
+    if (p === "Medium") return "bg-yellow-500 text-black";
+    return "bg-emerald-500 text-white";
+  }
+
+  function parseDisplayDate(display: string): string {
+    const match = display.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+    if (!match) return "";
+    const [, day, monthStr, year] = match;
+    const months: Record<string, string> = {
+      January: "01",
+      February: "02",
+      March: "03",
+      April: "04",
+      May: "05",
+      June: "06",
+      July: "07",
+      August: "08",
+      September: "09",
+      October: "10",
+      November: "11",
+      December: "12",
+    };
+    const month = months[monthStr] || "01";
+    return `${year}-${month}-${day.padStart(2, "0")}`;
+  }
+
+  function formatDisplayDate(iso: string): string {
+    if (!iso) return "";
+    const [year, month, day] = iso.split("-");
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
   }
 
   return (
@@ -56,8 +196,9 @@ function ProjectDetailPage() {
       <main className="flex-1 min-w-0">
         <Topbar onMenuClick={() => setMobileMenuOpen(true)} />
 
-        <div className="max-w-6xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
-          <div className="mb-6">
+        {/* Breadcrumb */}
+        <div className="max-w-6xl mx-auto px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-6">
+          <nav className="text-sm text-gray-100/50 mb-6">
             <button
               onClick={() =>
                 navigate({
@@ -65,40 +206,454 @@ function ProjectDetailPage() {
                   search: { tab: "Projects" },
                 })
               }
-              className="text-sm text-gray-100/50 hover:text-gray-100 mb-4"
+              className="hover:text-gray-100 transition-colors"
             >
-              ← Back to Projects
+              Projects
             </button>
-            <h1 className="text-3xl font-bold mb-1">{project.name}</h1>
-            <p className="text-gray-100/50 text-sm">{project.client}</p>
-          </div>
+            <span className="mx-1">&gt;</span>
+            <span className="text-gray-100 font-medium">{name}</span>
+          </nav>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-4">
-              <p className="text-xs text-gray-100/50 mb-1">Priority</p>
-              <span
-                className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${
-                  project.priority === "High"
-                    ? "bg-red-500 text-white"
-                    : project.priority === "Medium"
-                      ? "bg-yellow-500 text-black"
-                      : "bg-emerald-500 text-white"
-                }`}
-              >
-                {project.priority}
-              </span>
+        {/* Content */}
+        <div className="max-w-6xl mx-auto px-4 pb-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left column */}
+            <div className="flex-1 min-w-0">
+              {/* Editable project name */}
+              <div className="group flex items-center gap-3 mb-4">
+                {editingName ? (
+                  <input
+                    ref={nameInputRef}
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={handleSaveName}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleSaveName();
+                    }}
+                    autoFocus
+                    className="bg-transparent text-3xl font-bold text-gray-100 outline-none border-b border-neutral-700 focus:border-sky-500 w-full pb-1"
+                  />
+                ) : (
+                  <>
+                    <h1 className="text-3xl font-bold">{name}</h1>
+                    <button
+                      onClick={() => {
+                        setEditingName(true);
+                        setTimeout(() => nameInputRef.current?.focus(), 0);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100 transition-all"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {/* Resources */}
+              <div className="flex items-center gap-3 mb-10">
+                <span className="text-sm text-gray-100/50">Resources</span>
+                {project.resources.map((r) => (
+                  <span
+                    key={r.name}
+                    className="inline-flex items-center gap-2 text-sm text-gray-100 bg-neutral-800/60 px-3 py-1.5 rounded-lg"
+                  >
+                    <FileText size={14} />
+                    {r.name}
+                  </span>
+                ))}
+                <button
+                  type="button"
+                  className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100 transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+
+              {/* Editable description with react-markdown */}
+              <div className="mb-10">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-base font-semibold text-gray-100">
+                    Description
+                  </h2>
+                  {!editingDesc && (
+                    <button
+                      onClick={() => {
+                        setEditingDesc(true);
+                        setTimeout(() => descTextareaRef.current?.focus(), 0);
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100 transition-colors"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
+                </div>
+
+                {editingDesc ? (
+                  <div className="space-y-3">
+                    <textarea
+                      ref={descTextareaRef}
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={10}
+                      className="w-full bg-zinc-900/80 border border-neutral-700 rounded-xl p-4 text-sm text-gray-100 outline-none focus:border-sky-500 resize-y font-mono leading-6"
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSaveDescription}
+                        className="bg-white text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingDesc(false)}
+                        className="text-sm text-gray-100/50 hover:text-gray-100 px-4 py-2"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose prose-invert prose-sm max-w-none text-gray-100/70 leading-7">
+                    <ReactMarkdown>{description}</ReactMarkdown>
+                  </div>
+                )}
+              </div>
+
+              {/* Milestones */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-base font-semibold text-gray-100">
+                    Milestones
+                  </h2>
+                  <button
+                    onClick={handleCreateMilestone}
+                    className="inline-flex items-center gap-1.5 text-sm text-gray-100/50 hover:text-gray-100 transition-colors"
+                  >
+                    <Plus size={14} />
+                    Create Milestone
+                  </button>
+                </div>
+
+                {/* New milestone form */}
+                {editingMilestoneId === "new" && (
+                  <div className="bg-zinc-900/50 border border-neutral-800 rounded-xl p-4 mb-6 space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Milestone name"
+                      value={draftMilestone.title}
+                      onChange={(e) =>
+                        setDraftMilestone((d) => ({
+                          ...d,
+                          title: e.target.value,
+                        }))
+                      }
+                      className="w-full bg-transparent text-sm font-semibold text-gray-100 placeholder:text-gray-100/30 outline-none border-b border-neutral-700 focus:border-sky-500 pb-1"
+                    />
+                    <textarea
+                      placeholder="Milestone description..."
+                      value={draftMilestone.description}
+                      onChange={(e) =>
+                        setDraftMilestone((d) => ({
+                          ...d,
+                          description: e.target.value,
+                        }))
+                      }
+                      rows={3}
+                      className="w-full bg-zinc-900/80 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder:text-gray-100/30 outline-none focus:border-sky-500 resize-y"
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={handleSaveMilestone}
+                        className="bg-white text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleCancelMilestone}
+                        className="text-sm text-gray-100/50 hover:text-gray-100 px-4 py-2"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  {milestones.map((m, i) => (
+                    <div key={`${m.title}-${i}`} className="group">
+                      {editingMilestoneId === i ? (
+                        <div className="bg-zinc-900/50 border border-neutral-800 rounded-xl p-4 space-y-3">
+                          <input
+                            type="text"
+                            value={draftMilestone.title}
+                            onChange={(e) =>
+                              setDraftMilestone((d) => ({
+                                ...d,
+                                title: e.target.value,
+                              }))
+                            }
+                            className="w-full bg-transparent text-sm font-semibold text-gray-100 outline-none border-b border-neutral-700 focus:border-sky-500 pb-1"
+                          />
+                          <textarea
+                            value={draftMilestone.description}
+                            onChange={(e) =>
+                              setDraftMilestone((d) => ({
+                                ...d,
+                                description: e.target.value,
+                              }))
+                            }
+                            rows={3}
+                            className="w-full bg-zinc-900/80 border border-neutral-700 rounded-lg px-3 py-2 text-sm text-gray-100 outline-none focus:border-sky-500 resize-y"
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={handleSaveMilestone}
+                              className="bg-white text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleCancelMilestone}
+                              className="text-sm text-gray-100/50 hover:text-gray-100 px-4 py-2"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() =>
+                            navigate({
+                              to: "/project/$projectName/milestone/$milestoneTitle",
+                              params: {
+                                projectName: slugify(project.name),
+                                milestoneTitle: slugify(m.title),
+                              },
+                            })
+                          }
+                          className="relative cursor-pointer hover:bg-neutral-800/30 rounded-xl p-3 -mx-3 transition-colors"
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="text-sm font-semibold text-gray-100">
+                              {m.title}
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs text-gray-100/40">
+                              <span>{m.date}</span>
+                              <span>•</span>
+                              <span>{m.tasks} Task</span>
+                              <span>•</span>
+                              <span>{m.completion}</span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-gray-100/50 line-clamp-2">
+                            {m.description}
+                          </p>
+                          {/* Hover actions */}
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditMilestone(i);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100"
+                            >
+                              <Pencil size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteMilestone(i);
+                              }}
+                              className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-red-400"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-4">
-              <p className="text-xs text-gray-100/50 mb-1">Target Date</p>
-              <p className="text-sm font-medium">{project.targetDate}</p>
-            </div>
-            <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-4">
-              <p className="text-xs text-gray-100/50 mb-1">Tasks</p>
-              <p className="text-sm font-medium">{project.tasks}</p>
-            </div>
-            <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-4">
-              <p className="text-xs text-gray-100/50 mb-1">Completion</p>
-              <p className="text-sm font-medium">{project.status}</p>
+
+            {/* Right sidebar */}
+            <div className="w-full lg:w-72 shrink-0 space-y-4">
+              {/* Properties */}
+              <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-gray-100">
+                    Properties
+                  </h3>
+                </div>
+                <div className="space-y-4">
+                  {/* Priority */}
+                  <div className="flex items-center justify-between relative">
+                    <span className="text-sm text-gray-100/50">Priority</span>
+                    <div className="relative">
+                      {editingProperty === "priority" ? (
+                        <div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-[100px]">
+                          {(["High", "Medium", "Low"] as const).map((p) => (
+                            <button
+                              key={p}
+                              onClick={() => {
+                                setPriority(p);
+                                handleSaveProperty();
+                              }}
+                              className={`w-full text-left text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${
+                                priority === p
+                                  ? `${getPriorityStyle(p)} opacity-90`
+                                  : "text-gray-100 hover:bg-neutral-800"
+                              }`}
+                            >
+                              {p}
+                            </button>
+                          ))}
+                        </div>
+                      ) : null}
+                      <button
+                        onClick={() => setEditingProperty("priority")}
+                        className={`inline-flex items-center text-xs font-medium px-3 py-1 rounded-full ${getPriorityStyle(priority)}`}
+                      >
+                        {priority}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Start Date */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-100/50">Start Date</span>
+                    {editingProperty === "startDate" ? (
+                      <input
+                        ref={startDateRef}
+                        type="date"
+                        value={parseDisplayDate(startDate)}
+                        onChange={(e) => {
+                          const iso = e.target.value;
+                          if (iso) setStartDate(formatDisplayDate(iso));
+                        }}
+                        onBlur={handleSaveProperty}
+                        autoFocus
+                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 [color-scheme:dark]"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingProperty("startDate");
+                          setTimeout(
+                            () => startDateRef.current?.showPicker(),
+                            0,
+                          );
+                        }}
+                        className="text-sm text-gray-100 hover:underline"
+                      >
+                        {startDate}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Due Date */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-100/50">Due Date</span>
+                    {editingProperty === "targetDate" ? (
+                      <input
+                        ref={targetDateRef}
+                        type="date"
+                        value={parseDisplayDate(targetDate)}
+                        onChange={(e) => {
+                          const iso = e.target.value;
+                          if (iso) setTargetDate(formatDisplayDate(iso));
+                        }}
+                        onBlur={handleSaveProperty}
+                        autoFocus
+                        className="bg-zinc-900/80 border border-neutral-700 rounded-lg px-2 py-1 text-sm text-gray-100 outline-none focus:border-sky-500 w-32 [color-scheme:dark]"
+                      />
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setEditingProperty("targetDate");
+                          setTimeout(
+                            () => targetDateRef.current?.showPicker(),
+                            0,
+                          );
+                        }}
+                        className="text-sm text-gray-100 hover:underline"
+                      >
+                        {targetDate}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Milestones */}
+              <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-gray-100 mb-4">
+                  Milestones
+                </h3>
+                <div className="space-y-3">
+                  {milestones.slice(0, 3).map((m, i) => (
+                    <div
+                      key={`${m.title}-${i}`}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="text-sm text-gray-100">{m.title}</span>
+                      <span className="text-xs text-gray-100/40">{m.date}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Progress */}
+              <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-5">
+                <h3 className="text-sm font-semibold text-gray-100 mb-4">
+                  Progress
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-100/50">Total Task</span>
+                    <span className="text-sm text-gray-100 font-medium">
+                      {project.progress.totalTask}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-sky-500" />
+                      <span className="text-sm text-gray-100/50">Started</span>
+                    </div>
+                    <span className="text-sm text-gray-100 font-medium">
+                      {project.progress.started}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      <span className="text-sm text-gray-100/50">
+                        Completed
+                      </span>
+                    </div>
+                    <span className="text-sm text-gray-100 font-medium">
+                      {project.progress.completed}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

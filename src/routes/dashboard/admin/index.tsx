@@ -9,7 +9,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { z } from "zod";
 
-export type Section = "Dashboard" | "Projects" | "Invoices";
+export type Section = "Dashboard" | "Projects" | "Invoices" | undefined;
 
 const searchSchema = z.object({
   tab: z

@@ -18,6 +18,7 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as ProjectProjectNameIndexRouteImport } from './routes/project/$projectName/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
+import { Route as ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +65,12 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectProjectNameMilestoneMilestoneTitleIndexRoute =
+  ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport.update({
+    id: '/project/$projectName/milestone/$milestoneTitle/',
+    path: '/project/$projectName/milestone/$milestoneTitle/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -86,6 +94,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/project/$projectName': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -98,6 +107,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/admin/'
     | '/project/$projectName/'
+    | '/project/$projectName/milestone/$milestoneTitle/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/admin'
     | '/project/$projectName'
+    | '/project/$projectName/milestone/$milestoneTitle'
   id:
     | '__root__'
     | '/'
@@ -133,6 +145,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/admin/'
     | '/project/$projectName/'
+    | '/project/$projectName/milestone/$milestoneTitle/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -145,6 +158,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   ProjectProjectNameIndexRoute: typeof ProjectProjectNameIndexRoute
+  ProjectProjectNameMilestoneMilestoneTitleIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -212,6 +226,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/$projectName/milestone/$milestoneTitle/': {
+      id: '/project/$projectName/milestone/$milestoneTitle/'
+      path: '/project/$projectName/milestone/$milestoneTitle'
+      fullPath: '/project/$projectName/milestone/$milestoneTitle/'
+      preLoaderRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -225,6 +246,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   ProjectProjectNameIndexRoute: ProjectProjectNameIndexRoute,
+  ProjectProjectNameMilestoneMilestoneTitleIndexRoute:
+    ProjectProjectNameMilestoneMilestoneTitleIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
