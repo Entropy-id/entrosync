@@ -27,7 +27,7 @@ export function ProjectMilestones({
     data: Record<string, unknown>,
     rollback: () => void,
   ) => Promise<void>;
-  handleDelete: (index: number) => void;
+  handleDelete: (index: number) => Promise<void>;
   handleCancel: () => void;
   projectTitle: string;
   projectId: string;

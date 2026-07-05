@@ -42,6 +42,10 @@ export const updateMilestoneStatusSchema = z.object({
   status: MilestoneStatus,
 });
 
+export const deleteMilestoneSchema = z.object({
+  id: z.string().uuid(),
+});
+
 export const updateMilestoneSchema = z.object({
   id: z.string().uuid(),
   projectId: z.string().uuid(),

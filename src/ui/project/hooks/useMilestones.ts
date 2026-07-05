@@ -3,10 +3,12 @@ import { formatDisplayDate, computeMilestoneCompletion } from "../utils";
 import { useServerFn } from "@tanstack/react-start";
 import {
   createMilestone,
+  deleteMilestone,
   updateMilestone,
 } from "#/modules/project/project.api";
 
 export type MilestoneDraft = {
+  id: string;
   title: string;
   projectId: string;
   description: string;
@@ -16,6 +18,7 @@ export type MilestoneDraft = {
 };
 
 export type InitialMilestone = {
+  id: string;
   title: string;
   projectId: string;
   description: string | null;
@@ -26,6 +29,7 @@ export type InitialMilestone = {
 export function useMilestones(initialMilestones: InitialMilestone[]) {
   const [milestones, setMilestones] = useState<MilestoneDraft[]>(
     initialMilestones.map((m) => ({
+      id: m.id,
       title: m.title,
       projectId: m.projectId,
       description: m.description ?? "",
@@ -37,12 +41,14 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 
   const updateMilestoneFn = useServerFn(updateMilestone);
   const createMilestoneFn = useServerFn(createMilestone);
+  const deleteMilestoneFn = useServerFn(deleteMilestone);
 
   const [editingMilestoneId, setEditingMilestoneId] = useState<
     number | "new" | null
   >(null);
 
   const [draftMilestone, setDraftMilestone] = useState<MilestoneDraft>({
+    id: "",
     title: "",
     projectId: "",
     description: "",
@@ -53,6 +59,7 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 
   function handleCreate() {
     setDraftMilestone({
+      id: "",
       title: "",
       projectId: "",
       description: "",
@@ -83,9 +90,9 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
         setMilestones((prev) =>
           prev.map((m, i) => (i === editingMilestoneId ? draftMilestone : m)),
         );
-        // TODO: call API to update milestone
+        console.log(editingMilestoneId);
         await updateMilestoneFn({
-          data: { id: editingMilestoneId, ...data },
+          data: { id: draftMilestone.id, ...data },
         });
       }
     } catch (error) {
@@ -100,10 +107,10 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
     }
   }
 
-  function handleDelete(index: number) {
+  async function handleDelete(index: number) {
     setMilestones((prev) => prev.filter((_, i) => i !== index));
     if (editingMilestoneId === index) setEditingMilestoneId(null);
-    // TODO: call API to persist change
+    await deleteMilestoneFn({ data: { id: milestones[index].id } });
   }
 
   function handleCancel() {

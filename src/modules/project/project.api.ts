@@ -5,6 +5,7 @@ import {
   createProjectSchema,
   createProjectWithPrdSchema,
   createTaskSchema,
+  deleteMilestoneSchema,
   milestoneByProjectSchema,
   projectByIdSchema,
   projectByTitleSchema,
@@ -300,6 +301,24 @@ export const updateMilestone = createServerFn({
       include: { tasks: true },
     });
     return serializeMilestone(milestone);
+  });
+
+/**
+ * Deletes a milestone.
+ *
+ * @remarks
+ * Server function — runs only on the server.
+ *
+ * @returns The serialized milestone details.
+ */
+export const deleteMilestone = createServerFn({
+  method: "POST",
+})
+  .validator((input) => deleteMilestoneSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id } = data;
+    await prisma.milestone.delete({ where: { id } });
+    return null;
   });
 
 /**
