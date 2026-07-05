@@ -43,7 +43,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
           />
         </div>
 
-        <div className="flex items-center gap-1 sm:gap-2">
+        {/*<div className="flex items-center gap-1 sm:gap-2">
           <button
             type="button"
             className="p-2 sm:p-2.5 rounded-lg hover:bg-neutral-800 text-gray-100 relative"
@@ -57,7 +57,7 @@ export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
           >
             <Moon size={18} />
           </button>
-        </div>
+        </div>*/}
 
         <div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2">
           <div className="hidden sm:block text-right">
