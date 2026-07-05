@@ -105,7 +105,10 @@ export function ProjectDetailPage({ project }: { project: Project }) {
                 initialDueDate={project.dueDate}
               />
 
-              <ProjectMiniMilestones milestones={milestones} />
+              <ProjectMiniMilestones
+                projectTitle={project.title}
+                milestones={milestones}
+              />
 
               <ProjectProgress milestones={project.milestones} />
             </div>
