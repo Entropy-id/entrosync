@@ -3,7 +3,7 @@ import { RegisterForm } from "../components/RegisterForm";
 import { AuthLayout } from "../layouts/AuthLayout";
 
 interface RegisterPageProps {
-	onToggle: () => void
+	onToggle: () => void;
 }
 
 export function RegisterPage({ onToggle }: RegisterPageProps) {

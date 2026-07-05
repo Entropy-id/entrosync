@@ -1,9 +1,18 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createClientOnlyFn } from "@tanstack/react-start";
 import { ArrowRight, ArrowUp, Loader2, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { streamPrd } from "#/modules/ai/ai.client";
 import { createProjectWithPrd } from "#/modules/project/project.api";
+
+const streamPRD = createClientOnlyFn(
+	async (
+		messages: Array<{ role: "user" | "system" | "assistant"; content: string }>,
+	) => {
+		const { streamPrd } = await import("#/modules/ai/ai.client");
+		return streamPrd(messages);
+	},
+);
 
 export const Route = createFileRoute("/plan/")({
 	component: RouteComponent,
@@ -37,13 +46,13 @@ function RouteComponent() {
 	const [isSaving, setIsSaving] = useState(false);
 	const contentEndRef = useRef<HTMLDivElement>(null);
 
-	const scrollToBottom = () => {
+	const scrollToBottom = useCallback(() => {
 		contentEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	};
+	}, []);
 
 	useEffect(() => {
 		if (isStreaming) scrollToBottom();
-	}, [generatedContent, isStreaming]);
+	}, [isStreaming, scrollToBottom]);
 
 	const handleSubmit = async () => {
 		if (!value.trim()) return;
@@ -53,7 +62,8 @@ function RouteComponent() {
 		setValue("");
 
 		try {
-			const stream = streamPrd([{ role: "user", content: value }]);
+			const stream = await streamPRD([{ role: "user", content: value }]);
+			if (!stream) return;
 			for await (const chunk of stream) {
 				setGeneratedContent((prev) => prev + chunk);
 			}
@@ -61,7 +71,7 @@ function RouteComponent() {
 			console.error("Streaming error:", error);
 			setGeneratedContent(
 				(prev) =>
-					prev + "\n\n*[Error: Failed to generate PRD. Please try again.]*",
+					`${prev}\n\n*[Error: Failed to generate PRD. Please try again.]*`,
 			);
 		} finally {
 			setIsStreaming(false);
@@ -84,11 +94,12 @@ function RouteComponent() {
 		setGeneratedContent("");
 
 		try {
-			const stream = streamPrd([
+			const stream = await streamPRD([
 				{ role: "user", content: submittedText },
 				{ role: "assistant", content: generatedContent },
 				{ role: "user", content: revision },
 			]);
+			if (!stream) return;
 			for await (const chunk of stream) {
 				setGeneratedContent((prev) => prev + chunk);
 			}
@@ -194,7 +205,9 @@ function RouteComponent() {
 									strokeLinecap="round"
 									strokeLinejoin="round"
 									className="w-4 h-4"
+									aria-hidden="true"
 								>
+									<title>Send message</title>
 									<path d="M12 19V5" />
 									<path d="M5 12l7-7 7 7" />
 								</svg>
@@ -307,10 +320,14 @@ function RouteComponent() {
 
 						<div className="space-y-4">
 							<div>
-								<label className="block text-sm font-medium text-gray-400 mb-2">
+								<label
+									htmlFor="project-title"
+									className="block text-sm font-medium text-gray-400 mb-2"
+								>
 									Project Title
 								</label>
 								<input
+									id="project-title"
 									type="text"
 									value={projectTitle}
 									onChange={(e) => setProjectTitle(e.target.value)}
@@ -324,10 +341,14 @@ function RouteComponent() {
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium text-gray-400 mb-2">
+								<label
+									htmlFor="project-description"
+									className="block text-sm font-medium text-gray-400 mb-2"
+								>
 									Description
 								</label>
 								<textarea
+									id="project-description"
 									value={projectDescription}
 									onChange={(e) => setProjectDescription(e.target.value)}
 									placeholder="Enter project description..."

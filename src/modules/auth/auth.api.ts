@@ -61,7 +61,7 @@ export const registerWithGoogleServerFn = createServerFn().handler(async () => {
 
 export const logoutServerFn = createServerFn().handler(async () => {
 	const headers = getRequestHeaders();
-    await auth.api.signOut({ headers });
+	await auth.api.signOut({ headers });
 
 	throw redirect({
 		to: "/login",

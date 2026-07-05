@@ -1,0 +1,39 @@
+name: "Deploy"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      
+      - name: Install deps
+        run: npm ci
+      
+      - name: Biome check
+        run: npm run check
+      
+      - name: Build app
+        run: npm run build
+      
+      - name: SSH to Server and run script
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/akmalrizk/live/
+            git pull
+            /home/akmalrizk/.nvm/versions/node/v24.18.0/bin/npm ci
+            /home/akmalrizk/.nvm/versions/node/v24.18.0/bin/npm run build
+            /home/akmalrizk/.nvm/versions/node/v24.18.0/bin/pm2 restart entrosync

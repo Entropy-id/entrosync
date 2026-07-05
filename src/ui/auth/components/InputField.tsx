@@ -4,10 +4,17 @@ interface InputFieldProps {
 	placeholder: string;
 	id: string;
 	value?: string;
-	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+	onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function InputField({ label, type, placeholder, id, value, onChange }: InputFieldProps) {
+export function InputField({
+	label,
+	type,
+	placeholder,
+	id,
+	value,
+	onChange,
+}: InputFieldProps) {
 	return (
 		<div className="flex flex-col gap-1">
 			{label && (

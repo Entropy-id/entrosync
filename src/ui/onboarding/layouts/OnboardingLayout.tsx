@@ -3,15 +3,15 @@ import { OnboardingFooter } from "./OnboardingFooter";
 import { OnboardingHeader } from "./OnboardingHeader";
 
 interface OnboardingLayoutProps {
-    children: ReactNode
+	children: ReactNode;
 }
 
 export function OnboardingLayout({ children }: OnboardingLayoutProps) {
-    return (
-        <>
-            <OnboardingHeader />
-            {children}
-            <OnboardingFooter />
-        </>
-    )
+	return (
+		<>
+			<OnboardingHeader />
+			{children}
+			<OnboardingFooter />
+		</>
+	);
 }

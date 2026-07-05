@@ -4,19 +4,19 @@ import { PayoutSchedule } from "../layouts/PayoutSchedule";
 import { Status } from "../layouts/Status";
 
 export function DashboardSection() {
-  return (
-    <>
-      {/*Status*/}
-      <Status />
+	return (
+		<>
+			{/*Status*/}
+			<Status />
 
-      {/* Active Projects */}
-      <ActiveProject />
+			{/* Active Projects */}
+			<ActiveProject />
 
-      {/* Payout Schedule */}
-      <PayoutSchedule />
+			{/* Payout Schedule */}
+			<PayoutSchedule />
 
-      {/* Activity Feed */}
-      <ActivityFeed />
-    </>
-  );
+			{/* Activity Feed */}
+			<ActivityFeed />
+		</>
+	);
 }
