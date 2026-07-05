@@ -385,10 +385,9 @@ function MilestoneDetailPage() {
 										<td className="py-4 px-4">{task.name}</td>
 										<td className="py-4 px-4">{task.dueDate}</td>
 										<td className="py-4 px-4">
-											<button
-												type="button"
-												// ref={openMenuIndex === i ? menuRef : null}
-												className="relative"
+											<div
+												ref={openMenuIndex === i ? menuRef : null}
+												className="relative inline-block"
 												onClick={(e) => e.stopPropagation()}
 											>
 												<button
@@ -435,7 +434,7 @@ function MilestoneDetailPage() {
 														</button>
 													</div>
 												)}
-											</button>
+											</div>
 										</td>
 									</tr>
 								))}
