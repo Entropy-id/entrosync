@@ -26,6 +26,7 @@ export function serializeMilestone(milestone: MilestoneWithTasks) {
     id: milestone.id,
     projectId: milestone.projectId,
     title: milestone.title,
+    description: milestone.description,
     status: milestone.status,
     startDate: toISOString(milestone.startDate),
     dueDate: toISOString(milestone.dueDate),

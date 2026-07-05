@@ -14,6 +14,7 @@ export function ProjectMilestones({
   handleDelete,
   handleCancel,
   projectTitle,
+  projectId,
 }: {
   milestones: MilestoneDraft[];
   editingMilestoneId: number | "new" | null;
@@ -21,10 +22,14 @@ export function ProjectMilestones({
   setDraftMilestone: React.Dispatch<React.SetStateAction<MilestoneDraft>>;
   handleCreate: () => void;
   handleEdit: (index: number) => void;
-  handleSave: () => void;
+  handleSave: (
+    data: Record<string, unknown>,
+    rollback: () => void,
+  ) => Promise<void>;
   handleDelete: (index: number) => void;
   handleCancel: () => void;
   projectTitle: string;
+  projectId: string;
 }) {
   const navigate = useNavigate();
 
@@ -49,7 +54,11 @@ export function ProjectMilestones({
             placeholder="Milestone name"
             value={draftMilestone.title}
             onChange={(e) =>
-              setDraftMilestone((d) => ({ ...d, title: e.target.value }))
+              setDraftMilestone((d) => ({
+                ...d,
+                title: e.target.value,
+                projectId: projectId,
+              }))
             }
             className="w-full bg-transparent text-sm font-semibold text-gray-100 placeholder:text-gray-100/30 outline-none border-b border-neutral-700 focus:border-sky-500 pb-1"
           />
@@ -60,6 +69,7 @@ export function ProjectMilestones({
               setDraftMilestone((d) => ({
                 ...d,
                 description: e.target.value,
+                projectId: projectId,
               }))
             }
             rows={3}
@@ -67,7 +77,9 @@ export function ProjectMilestones({
           />
           <div className="flex items-center gap-2">
             <button
-              onClick={handleSave}
+              onClick={() => {
+                handleSave(draftMilestone, () => console.log("rollback"));
+              }}
               className="bg-white text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
             >
               Save
@@ -111,7 +123,9 @@ export function ProjectMilestones({
                 />
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={handleSave}
+                    onClick={() => {
+                      handleSave(draftMilestone, () => console.log("rollback"));
+                    }}
                     className="bg-white text-black text-sm font-medium px-4 py-2 rounded-lg hover:bg-zinc-200 transition-colors"
                   >
                     Save

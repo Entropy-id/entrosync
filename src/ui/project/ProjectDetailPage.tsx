@@ -22,6 +22,8 @@ interface Project {
   dueDate: string | null;
   milestones: {
     title: string;
+    projectId: string;
+    description: string | null;
     dueDate: string | null;
     tasks: { status: string }[];
   }[];
@@ -89,6 +91,7 @@ export function ProjectDetailPage({ project }: { project: Project }) {
                 handleDelete={handleDelete}
                 handleCancel={handleCancel}
                 projectTitle={project.title}
+                projectId={project.id}
               />
             </div>
 

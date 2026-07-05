@@ -1,8 +1,14 @@
 import { useState } from "react";
 import { formatDisplayDate, computeMilestoneCompletion } from "../utils";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  createMilestone,
+  updateMilestone,
+} from "#/modules/project/project.api";
 
 export type MilestoneDraft = {
   title: string;
+  projectId: string;
   description: string;
   date: string;
   tasks: number;
@@ -11,6 +17,8 @@ export type MilestoneDraft = {
 
 export type InitialMilestone = {
   title: string;
+  projectId: string;
+  description: string | null;
   dueDate: string | null;
   tasks: { status: string }[];
 };
@@ -19,12 +27,16 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
   const [milestones, setMilestones] = useState<MilestoneDraft[]>(
     initialMilestones.map((m) => ({
       title: m.title,
-      description: "",
+      projectId: m.projectId,
+      description: m.description ?? "",
       date: formatDisplayDate(m.dueDate),
       tasks: m.tasks.length,
       completion: computeMilestoneCompletion(m.tasks),
     })),
   );
+
+  const updateMilestoneFn = useServerFn(updateMilestone);
+  const createMilestoneFn = useServerFn(createMilestone);
 
   const [editingMilestoneId, setEditingMilestoneId] = useState<
     number | "new" | null
@@ -32,6 +44,7 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 
   const [draftMilestone, setDraftMilestone] = useState<MilestoneDraft>({
     title: "",
+    projectId: "",
     description: "",
     date: "",
     tasks: 0,
@@ -41,6 +54,7 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
   function handleCreate() {
     setDraftMilestone({
       title: "",
+      projectId: "",
       description: "",
       date: "",
       tasks: 0,
@@ -54,17 +68,36 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
     setEditingMilestoneId(index);
   }
 
-  function handleSave() {
-    if (!draftMilestone.title.trim()) return;
-    if (editingMilestoneId === "new") {
-      setMilestones((prev) => [...prev, draftMilestone]);
-    } else if (editingMilestoneId !== null) {
-      setMilestones((prev) =>
-        prev.map((m, i) => (i === editingMilestoneId ? draftMilestone : m)),
-      );
+  async function handleSave(
+    data: Record<string, unknown>,
+    rollback: () => void,
+  ) {
+    try {
+      if (editingMilestoneId === "new") {
+        setMilestones((prev) => [...prev, draftMilestone]);
+        console.log(data);
+        await createMilestoneFn({
+          data: { ...data },
+        });
+      } else if (editingMilestoneId !== null) {
+        setMilestones((prev) =>
+          prev.map((m, i) => (i === editingMilestoneId ? draftMilestone : m)),
+        );
+        // TODO: call API to update milestone
+        await updateMilestoneFn({
+          data: { id: editingMilestoneId, ...data },
+        });
+      }
+    } catch (error) {
+      if (editingMilestoneId === "new") {
+        console.error("Failed to create milestone", error);
+      } else if (editingMilestoneId !== null) {
+        console.error("Failed to update milestone", error);
+      }
+      rollback();
+    } finally {
+      setEditingMilestoneId(null);
     }
-    setEditingMilestoneId(null);
-    // TODO: call API to persist change
   }
 
   function handleDelete(index: number) {

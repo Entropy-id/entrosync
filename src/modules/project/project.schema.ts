@@ -32,6 +32,7 @@ export const projectByIdSchema = z.object({
 export const createMilestoneSchema = z.object({
   projectId: z.string().uuid(),
   title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
 });
@@ -43,7 +44,9 @@ export const updateMilestoneStatusSchema = z.object({
 
 export const updateMilestoneSchema = z.object({
   id: z.string().uuid(),
+  projectId: z.string().uuid(),
   title: z.string().min(1).optional(),
+  description: z.string().optional(),
   startDate: z.coerce.date().optional(),
   dueDate: z.coerce.date().optional(),
   status: MilestoneStatus.optional(),
