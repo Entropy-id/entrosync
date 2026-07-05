@@ -2,6 +2,8 @@ import { useRef, useState, useCallback } from "react";
 import { Pencil } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { updateProject } from "#/modules/project/project.api";
+import { slugify } from "#/modules/project/project.mock";
+import { useNavigate } from "@tanstack/react-router";
 
 export function EditableName({
   projectId,
@@ -14,12 +16,15 @@ export function EditableName({
   const [editing, setEditing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const updateProjectFn = useServerFn(updateProject);
+  const navigate = useNavigate();
 
   const handleSave = useCallback(async () => {
     setEditing(false);
     if (name === initialName) return;
     try {
       await updateProjectFn({ data: { id: projectId, title: name } });
+      const slug = slugify(name);
+      navigate({ to: "/project/$projectName", params: { projectName: slug } });
     } catch (err) {
       console.error("Failed to update project name", err);
       setName(initialName);
