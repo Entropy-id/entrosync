@@ -1,21 +1,25 @@
 import { createServerFn } from "@tanstack/react-start";
 import { prisma } from "#/utils/prisma";
+import { z } from "zod";
 import {
   createMilestoneSchema,
   createProjectSchema,
   createProjectWithPrdSchema,
   createTaskSchema,
   deleteMilestoneSchema,
+  deleteProjectDocumentSchema,
   milestoneByProjectSchema,
   projectByIdSchema,
   projectByTitleSchema,
   updateMilestoneSchema,
   updateMilestoneStatusSchema,
+  updateProjectDocumentSchema,
   updateProjectSchema,
   updateTaskStatusSchema,
 } from "./project.schema";
 import { slugify } from "./project.mock";
 import {
+  serializeDocument,
   serializeMilestone,
   serializeProjectDetail,
   serializeProjectWithMilestones,
@@ -355,4 +359,64 @@ export const updateTaskStatus = createServerFn({
     const { id, status } = updateTaskStatusSchema.parse(data);
     const task = await prisma.task.update({ where: { id }, data: { status } });
     return serializeTask(task);
+  });
+
+/**
+ * Fetches a project document by ID.
+ *
+ * @remarks
+ * Server function — runs only on the server.
+ *
+ * @returns The serialized document details.
+ */
+export const getProjectDocument = createServerFn({
+  method: "GET",
+})
+  .validator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { id } = data;
+    const document = await prisma.projectDocument.findUnique({
+      where: { id },
+    });
+    if (!document) return null;
+    return serializeDocument(document);
+  });
+
+/**
+ * Updates a project document.
+ *
+ * @remarks
+ * Server function — runs only on the server.
+ *
+ * @returns The serialized document details.
+ */
+export const updateProjectDocument = createServerFn({
+  method: "POST",
+})
+  .validator((input) => updateProjectDocumentSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id, ...rest } = updateProjectDocumentSchema.parse(data);
+    const document = await prisma.projectDocument.update({
+      where: { id },
+      data: rest,
+    });
+    return serializeDocument(document);
+  });
+
+/**
+ * Deletes a project document by ID.
+ *
+ * @remarks
+ * Server function — runs only on the server.
+ *
+ * @returns null
+ */
+export const deleteProjectDocument = createServerFn({
+  method: "POST",
+})
+  .validator((input) => deleteProjectDocumentSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id } = deleteProjectDocumentSchema.parse(data);
+    await prisma.projectDocument.delete({ where: { id } });
+    return null;
   });

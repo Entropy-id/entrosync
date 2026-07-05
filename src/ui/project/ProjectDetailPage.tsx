@@ -29,6 +29,15 @@ interface Project {
     tasks: { status: string }[];
   }[];
   resources: { id: string; title: string }[];
+  documents: {
+    id: string;
+    projectId: string;
+    title: string;
+    content: string | null;
+    version: number;
+    createdAt: string | null;
+    updatedAt: string | null;
+  }[];
 }
 
 export function ProjectDetailPage({ project }: { project: Project }) {
@@ -74,7 +83,11 @@ export function ProjectDetailPage({ project }: { project: Project }) {
                 initialName={project.title}
               />
 
-              <ProjectResources resources={project.resources} />
+              <ProjectResources
+                projectTitle={project.title}
+                resources={project.resources}
+                documents={project.documents}
+              />
 
               <EditableDescription
                 projectId={project.id}

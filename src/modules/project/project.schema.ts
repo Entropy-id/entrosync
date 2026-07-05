@@ -84,3 +84,13 @@ export const createProjectWithPrdSchema = z.object({
   clientId: z.string().uuid().optional(),
   freelancerId: z.string().uuid().optional(),
 });
+
+export const updateProjectDocumentSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1).optional(),
+  content: z.string().optional(),
+});
+
+export const deleteProjectDocumentSchema = z.object({
+  id: z.string().uuid(),
+});

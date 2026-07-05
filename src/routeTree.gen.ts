@@ -19,6 +19,7 @@ import { Route as ProjectProjectNameIndexRouteImport } from './routes/project/$p
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/index'
+import { Route as ProjectProjectNameDocumentDocumentTitleIndexRouteImport } from './routes/project/$projectName/document/$documentTitle/index'
 import { Route as ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/task/$taskId/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -72,6 +73,12 @@ const ProjectProjectNameMilestoneMilestoneTitleIndexRoute =
     path: '/project/$projectName/milestone/$milestoneTitle/',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ProjectProjectNameDocumentDocumentTitleIndexRoute =
+  ProjectProjectNameDocumentDocumentTitleIndexRouteImport.update({
+    id: '/project/$projectName/document/$documentTitle/',
+    path: '/project/$projectName/document/$documentTitle/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute =
   ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport.update({
     id: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/',
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/document/$documentTitle/': typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
@@ -102,6 +110,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/project/$projectName': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/document/$documentTitle': typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
   '/project/$projectName/milestone/$milestoneTitle': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/task/$taskId': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
@@ -116,6 +125,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/document/$documentTitle/': typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
   '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/admin/'
     | '/project/$projectName/'
+    | '/project/$projectName/document/$documentTitle/'
     | '/project/$projectName/milestone/$milestoneTitle/'
     | '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
   fileRoutesByTo: FileRoutesByTo
@@ -144,6 +155,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/admin'
     | '/project/$projectName'
+    | '/project/$projectName/document/$documentTitle'
     | '/project/$projectName/milestone/$milestoneTitle'
     | '/project/$projectName/milestone/$milestoneTitle/task/$taskId'
   id:
@@ -157,6 +169,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/dashboard/admin/'
     | '/project/$projectName/'
+    | '/project/$projectName/document/$documentTitle/'
     | '/project/$projectName/milestone/$milestoneTitle/'
     | '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
   fileRoutesById: FileRoutesById
@@ -171,6 +184,7 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   ProjectProjectNameIndexRoute: typeof ProjectProjectNameIndexRoute
+  ProjectProjectNameDocumentDocumentTitleIndexRoute: typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
   ProjectProjectNameMilestoneMilestoneTitleIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
   ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
@@ -247,6 +261,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/project/$projectName/document/$documentTitle/': {
+      id: '/project/$projectName/document/$documentTitle/'
+      path: '/project/$projectName/document/$documentTitle'
+      fullPath: '/project/$projectName/document/$documentTitle/'
+      preLoaderRoute: typeof ProjectProjectNameDocumentDocumentTitleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': {
       id: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
       path: '/project/$projectName/milestone/$milestoneTitle/task/$taskId'
@@ -267,6 +288,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   ProjectProjectNameIndexRoute: ProjectProjectNameIndexRoute,
+  ProjectProjectNameDocumentDocumentTitleIndexRoute:
+    ProjectProjectNameDocumentDocumentTitleIndexRoute,
   ProjectProjectNameMilestoneMilestoneTitleIndexRoute:
     ProjectProjectNameMilestoneMilestoneTitleIndexRoute,
   ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute:
