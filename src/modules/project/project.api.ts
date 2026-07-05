@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { auth } from "#/modules/auth/auth.utils";
 import { prisma } from "#/utils/prisma";
 import { slugify } from "./project.mock";
 import {
@@ -129,10 +131,14 @@ export const createProject = createServerFn({
 	.validator((input) => createProjectSchema.parse(input))
 	.handler(async ({ data }) => {
 		const parsed = createProjectSchema.parse(data);
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
+		if (!session) throw new Error("Unauthorized");
+
 		const project = await prisma.project.create({
 			data: {
 				...parsed,
-				freelancerId: parsed.freelancerId || "",
+				freelancerId: session.user.id,
 			},
 			include: {
 				milestones: {
@@ -185,12 +191,16 @@ export const createProjectWithPrd = createServerFn({
 	.validator((input) => createProjectWithPrdSchema.parse(input))
 	.handler(async ({ data }) => {
 		const parsed = data;
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
+		if (!session) throw new Error("Unauthorized");
+
 		const project = await prisma.project.create({
 			data: {
 				title: parsed.title,
 				description: parsed.description,
-				freelancerId: parsed.freelancerId || "",
-				clientId: parsed.clientId || "",
+				freelancerId: session.user.id,
+				clientId: parsed.clientId,
 			},
 			include: {
 				milestones: {

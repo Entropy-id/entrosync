@@ -7,11 +7,7 @@ export const TaskStatus = z.enum(["NOT_STARTED", "IN_PROGRESS", "DONE"]);
 export const createProjectSchema = z.object({
 	title: z.string().min(1, "Title is required"),
 	description: z.string().optional(),
-	clientId: z.string().uuid("Client ID must be a valid UUID"),
-	freelancerId: z
-		.string()
-		.uuid("Freelancer ID must be a valid UUID")
-		.optional(),
+	clientId: z.string().uuid("Client ID must be a valid UUID").optional(),
 });
 
 export const updateProjectSchema = z.object({
@@ -94,7 +90,6 @@ export const createProjectWithPrdSchema = z.object({
 	description: z.string().optional(),
 	content: z.string().min(1, "PRD content is required"),
 	clientId: z.string().uuid().optional(),
-	freelancerId: z.string().uuid().optional(),
 });
 
 export const updateProjectDocumentSchema = z.object({

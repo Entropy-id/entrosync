@@ -1,8 +1,9 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { createClientOnlyFn } from "@tanstack/react-start";
 import { ArrowRight, ArrowUp, Loader2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { getSessionServerFn } from "#/modules/auth/auth.api";
 import { createProjectWithPrd } from "#/modules/project/project.api";
 
 const streamPRD = createClientOnlyFn(
@@ -16,6 +17,15 @@ const streamPRD = createClientOnlyFn(
 
 export const Route = createFileRoute("/plan/")({
 	component: RouteComponent,
+	beforeLoad: async () => {
+		const session = await getSessionServerFn();
+		if (!session) {
+			throw redirect({
+				to: "/login",
+			});
+		}
+		return session;
+	},
 });
 
 function extractTitleFromPrd(content: string): string {
