@@ -1,4 +1,4 @@
-import { Copyright, Menu } from "lucide-react";
+import { Copyright } from "lucide-react";
 
 interface BrandingCardProps {
 	title: string;

@@ -388,13 +388,13 @@ function MilestoneDetailPage() {
 											<div
 												ref={openMenuIndex === i ? menuRef : null}
 												className="relative inline-block"
-												onClick={(e) => e.stopPropagation()}
 											>
 												<button
 													type="button"
-													onClick={() =>
-														setOpenMenuIndex(openMenuIndex === i ? null : i)
-													}
+													onClick={(e) => {
+														e.stopPropagation();
+														setOpenMenuIndex(openMenuIndex === i ? null : i);
+													}}
 													className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/70 hover:text-gray-100"
 												>
 													<EllipsisVertical size={14} />
