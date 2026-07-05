@@ -12,94 +12,94 @@ import { ProjectsSection } from "#/ui/dashboard/section/ProjectsSection";
 export type Section = "Dashboard" | "Projects" | "Invoices" | undefined;
 
 const searchSchema = z.object({
-  tab: z
-    .enum(["Dashboard", "Projects", "Invoices"])
-    .optional()
-    .catch("Dashboard"),
+	tab: z
+		.enum(["Dashboard", "Projects", "Invoices"])
+		.optional()
+		.catch("Dashboard"),
 });
 
 export const Route = createFileRoute("/dashboard/admin/")({
-  component: RouteComponent,
-  validateSearch: searchSchema,
-  beforeLoad: async () => {
-    const session = await getSessionServerFn();
+	component: RouteComponent,
+	validateSearch: searchSchema,
+	beforeLoad: async () => {
+		const session = await getSessionServerFn();
 
-    if (!session) {
-      throw redirect({
-        to: "/login",
-      });
-    }
+		if (!session) {
+			throw redirect({
+				to: "/login",
+			});
+		}
 
-    return session;
-  },
+		return session;
+	},
 });
 
 function RouteComponent() {
-  const navigate = useNavigate();
-  const logoutHandler = useServerFn(logoutServerFn);
-  const session = Route.useRouteContext();
-  const { tab } = Route.useSearch();
+	const navigate = useNavigate();
+	const logoutHandler = useServerFn(logoutServerFn);
+	const session = Route.useRouteContext();
+	const { tab } = Route.useSearch();
 
-  async function handleLogout() {
-    await logoutHandler();
-  }
+	async function handleLogout() {
+		await logoutHandler();
+	}
 
-  const [currentSection, setCurrentSection] = useState<Section>(tab);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [currentSection, setCurrentSection] = useState<Section>(tab);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  function handleChangeSection(section: Section) {
-    setCurrentSection(section);
-    if (section === "Invoices") {
-      setInvoiceInitialView("list");
-    }
-    navigate({ to: "/dashboard/admin", search: { tab: section } });
-  }
-  const [invoiceInitialView, setInvoiceInitialView] = useState<
-    "list" | "generator"
-  >("list");
+	function handleChangeSection(section: Section) {
+		setCurrentSection(section);
+		if (section === "Invoices") {
+			setInvoiceInitialView("list");
+		}
+		navigate({ to: "/dashboard/admin", search: { tab: section } });
+	}
+	const [invoiceInitialView, setInvoiceInitialView] = useState<
+		"list" | "generator"
+	>("list");
 
-  // function handleGenerateInvoice() {
-  //   setCurrentSection("Invoices");
-  //   setInvoiceInitialView("generator");
-  //   setMobileMenuOpen(false);
-  // }
+	// function handleGenerateInvoice() {
+	//   setCurrentSection("Invoices");
+	//   setInvoiceInitialView("generator");
+	//   setMobileMenuOpen(false);
+	// }
 
-  return (
-    <div className="min-h-screen w-full flex font-inter">
-      {/*Sidebar*/}
-      <Sidebar
-        currentSection={currentSection}
-        onChangeSection={handleChangeSection}
-        mobileOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-      />
+	return (
+		<div className="min-h-screen w-full flex font-inter">
+			{/*Sidebar*/}
+			<Sidebar
+				currentSection={currentSection}
+				onChangeSection={handleChangeSection}
+				mobileOpen={mobileMenuOpen}
+				onClose={() => setMobileMenuOpen(false)}
+			/>
 
-      {/*Main*/}
-      <main className="flex-1 min-w-0">
-        {/*Top Bar*/}
-        <Topbar
-          onMenuClick={() => setMobileMenuOpen(true)}
-          user={session?.user}
-          onLogout={handleLogout}
-        />
+			{/*Main*/}
+			<main className="flex-1 min-w-0">
+				{/*Top Bar*/}
+				<Topbar
+					onMenuClick={() => setMobileMenuOpen(true)}
+					user={session?.user}
+					onLogout={handleLogout}
+				/>
 
-        {/*Content*/}
-        <div className="max-w-6xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
-          {/*Dashboard Section*/}
-          <section className={currentSection === "Dashboard" ? "" : "hidden"}>
-            <DashboardSection />
-          </section>
+				{/*Content*/}
+				<div className="max-w-6xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
+					{/*Dashboard Section*/}
+					<section className={currentSection === "Dashboard" ? "" : "hidden"}>
+						<DashboardSection />
+					</section>
 
-          {/*Projects*/}
-          <section className={currentSection === "Projects" ? "" : "hidden"}>
-            <ProjectsSection />
-          </section>
-          {/*Invoices*/}
-          <section className={currentSection === "Invoices" ? "" : "hidden"}>
-            <InvoicesSection initialSubView={invoiceInitialView} />
-          </section>
-        </div>
-      </main>
-    </div>
-  );
+					{/*Projects*/}
+					<section className={currentSection === "Projects" ? "" : "hidden"}>
+						<ProjectsSection />
+					</section>
+					{/*Invoices*/}
+					<section className={currentSection === "Invoices" ? "" : "hidden"}>
+						<InvoicesSection initialSubView={invoiceInitialView} />
+					</section>
+				</div>
+			</main>
+		</div>
+	);
 }
