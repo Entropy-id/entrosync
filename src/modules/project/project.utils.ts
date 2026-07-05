@@ -54,6 +54,8 @@ export function serializeProjectWithMilestones(project: ProjectWithMilestones) {
     description: project.description,
     progress: project.progress,
     status: project.status,
+    startDate: toISOString(project.startDate),
+    dueDate: toISOString(project.dueDate),
     createdAt: toISOString(project.createdAt),
     updatedAt: toISOString(project.updatedAt),
     milestones: project.milestones.map(serializeMilestone),
