@@ -5,29 +5,29 @@ import { auth } from "#/modules/auth/auth.utils";
 import { prisma } from "#/utils/prisma";
 import { slugify } from "./project.mock";
 import {
-	createMilestoneSchema,
-	createProjectSchema,
-	createProjectWithPrdSchema,
-	createTaskSchema,
-	deleteMilestoneSchema,
-	deleteProjectDocumentSchema,
-	deleteTaskSchema,
-	milestoneByProjectSchema,
-	projectByIdSchema,
-	projectByTitleSchema,
-	updateMilestoneSchema,
-	updateMilestoneStatusSchema,
-	updateProjectDocumentSchema,
-	updateProjectSchema,
-	updateTaskSchema,
-	updateTaskStatusSchema,
+  createMilestoneSchema,
+  createProjectSchema,
+  createProjectWithPrdSchema,
+  createTaskSchema,
+  deleteMilestoneSchema,
+  deleteProjectDocumentSchema,
+  deleteTaskSchema,
+  milestoneByProjectSchema,
+  projectByIdSchema,
+  projectByTitleSchema,
+  updateMilestoneSchema,
+  updateMilestoneStatusSchema,
+  updateProjectDocumentSchema,
+  updateProjectSchema,
+  updateTaskSchema,
+  updateTaskStatusSchema,
 } from "./project.schema";
 import {
-	serializeDocument,
-	serializeMilestone,
-	serializeProjectDetail,
-	serializeProjectWithMilestones,
-	serializeTask,
+  serializeDocument,
+  serializeMilestone,
+  serializeProjectDetail,
+  serializeProjectWithMilestones,
+  serializeTask,
 } from "./project.utils";
 
 /**
@@ -41,18 +41,19 @@ import {
  * @returns A list of serialized projects with nested milestones and tasks.
  */
 export const getProjects = createServerFn({
-	method: "GET",
+  method: "GET",
 }).handler(async () => {
-	const projects = await prisma.project.findMany({
-		include: {
-			milestones: {
-				include: { tasks: true },
-				orderBy: { createdAt: "asc" },
-			},
-		},
-		orderBy: { createdAt: "desc" },
-	});
-	return projects.map(serializeProjectWithMilestones);
+  const projects = await prisma.project.findMany({
+    include: {
+      client: { select: { name: true } },
+      milestones: {
+        include: { tasks: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return projects.map(serializeProjectWithMilestones);
 });
 
 /**
@@ -65,24 +66,24 @@ export const getProjects = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const getProjectById = createServerFn({
-	method: "GET",
+  method: "GET",
 }).handler(async ({ data }) => {
-	const { id } = projectByIdSchema.parse(data);
-	const project = await prisma.project.findUnique({
-		where: { id },
-		include: {
-			milestones: {
-				include: { tasks: true },
-				orderBy: { createdAt: "asc" },
-			},
-			invoices: { orderBy: { issuedDate: "desc" } },
-			feedbacks: { orderBy: { createdAt: "desc" } },
-			resources: { orderBy: { createdAt: "desc" } },
-			documents: { orderBy: { createdAt: "desc" } },
-			logs: { orderBy: { createdAt: "desc" } },
-		},
-	});
-	return serializeProjectDetail(project);
+  const { id } = projectByIdSchema.parse(data);
+  const project = await prisma.project.findUnique({
+    where: { id },
+    include: {
+      milestones: {
+        include: { tasks: true },
+        orderBy: { createdAt: "asc" },
+      },
+      invoices: { orderBy: { issuedDate: "desc" } },
+      feedbacks: { orderBy: { createdAt: "desc" } },
+      resources: { orderBy: { createdAt: "desc" } },
+      documents: { orderBy: { createdAt: "desc" } },
+      logs: { orderBy: { createdAt: "desc" } },
+    },
+  });
+  return serializeProjectDetail(project);
 });
 
 /**
@@ -95,27 +96,27 @@ export const getProjectById = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const getProjectByTitle = createServerFn({
-	method: "GET",
+  method: "GET",
 })
-	.validator((input) => projectByTitleSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { title } = data;
-		const projects = await prisma.project.findMany({
-			include: {
-				milestones: {
-					include: { tasks: true },
-					orderBy: { createdAt: "asc" },
-				},
-				invoices: { orderBy: { issuedDate: "desc" } },
-				feedbacks: { orderBy: { createdAt: "desc" } },
-				resources: { orderBy: { createdAt: "desc" } },
-				documents: { orderBy: { createdAt: "desc" } },
-				logs: { orderBy: { createdAt: "desc" } },
-			},
-		});
-		const project = projects.find((p) => slugify(p.title) === title);
-		return serializeProjectDetail(project || null);
-	});
+  .validator((input) => projectByTitleSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { title } = data;
+    const projects = await prisma.project.findMany({
+      include: {
+        milestones: {
+          include: { tasks: true },
+          orderBy: { createdAt: "asc" },
+        },
+        invoices: { orderBy: { issuedDate: "desc" } },
+        feedbacks: { orderBy: { createdAt: "desc" } },
+        resources: { orderBy: { createdAt: "desc" } },
+        documents: { orderBy: { createdAt: "desc" } },
+        logs: { orderBy: { createdAt: "desc" } },
+      },
+    });
+    const project = projects.find((p) => slugify(p.title) === title);
+    return serializeProjectDetail(project || null);
+  });
 
 /**
  * Creates a new project.
@@ -126,29 +127,29 @@ export const getProjectByTitle = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const createProject = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => createProjectSchema.parse(input))
-	.handler(async ({ data }) => {
-		const parsed = createProjectSchema.parse(data);
-		const headers = getRequestHeaders();
-		const session = await auth.api.getSession({ headers });
-		if (!session) throw new Error("Unauthorized");
+  .validator((input) => createProjectSchema.parse(input))
+  .handler(async ({ data }) => {
+    const parsed = createProjectSchema.parse(data);
+    const headers = getRequestHeaders();
+    const session = await auth.api.getSession({ headers });
+    if (!session) throw new Error("Unauthorized");
 
-		const project = await prisma.project.create({
-			data: {
-				...parsed,
-				freelancerId: session.user.id,
-			},
-			include: {
-				milestones: {
-					include: { tasks: true },
-					orderBy: { createdAt: "asc" },
-				},
-			},
-		});
-		return serializeProjectWithMilestones(project);
-	});
+    const project = await prisma.project.create({
+      data: {
+        ...parsed,
+        freelancerId: session.user.id,
+      },
+      include: {
+        milestones: {
+          include: { tasks: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    return serializeProjectWithMilestones(project);
+  });
 
 /**
  * Updates an existing project.
@@ -159,23 +160,23 @@ export const createProject = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const updateProject = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => updateProjectSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id, ...rest } = updateProjectSchema.parse(data);
-		const project = await prisma.project.update({
-			where: { id },
-			data: rest,
-			include: {
-				milestones: {
-					include: { tasks: true },
-					orderBy: { createdAt: "asc" },
-				},
-			},
-		});
-		return serializeProjectWithMilestones(project);
-	});
+  .validator((input) => updateProjectSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id, ...rest } = updateProjectSchema.parse(data);
+    const project = await prisma.project.update({
+      where: { id },
+      data: rest,
+      include: {
+        milestones: {
+          include: { tasks: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    return serializeProjectWithMilestones(project);
+  });
 
 /**
  * Creates a new project with a PRD (Product Requirements Document).
@@ -186,39 +187,39 @@ export const updateProject = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const createProjectWithPrd = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => createProjectWithPrdSchema.parse(input))
-	.handler(async ({ data }) => {
-		const parsed = data;
-		const headers = getRequestHeaders();
-		const session = await auth.api.getSession({ headers });
-		if (!session) throw new Error("Unauthorized");
+  .validator((input) => createProjectWithPrdSchema.parse(input))
+  .handler(async ({ data }) => {
+    const parsed = data;
+    const headers = getRequestHeaders();
+    const session = await auth.api.getSession({ headers });
+    if (!session) throw new Error("Unauthorized");
 
-		const project = await prisma.project.create({
-			data: {
-				title: parsed.title,
-				description: parsed.description,
-				freelancerId: session.user.id,
-				clientId: parsed.clientId,
-			},
-			include: {
-				milestones: {
-					include: { tasks: true },
-					orderBy: { createdAt: "asc" },
-				},
-			},
-		});
-		await prisma.projectDocument.create({
-			data: {
-				projectId: project.id,
-				title: `${parsed.title} - PRD`,
-				content: parsed.content,
-				version: 1,
-			},
-		});
-		return serializeProjectWithMilestones(project);
-	});
+    const project = await prisma.project.create({
+      data: {
+        title: parsed.title,
+        description: parsed.description,
+        freelancerId: session.user.id,
+        clientId: parsed.clientId,
+      },
+      include: {
+        milestones: {
+          include: { tasks: true },
+          orderBy: { createdAt: "asc" },
+        },
+      },
+    });
+    await prisma.projectDocument.create({
+      data: {
+        projectId: project.id,
+        title: `${parsed.title} - PRD`,
+        content: parsed.content,
+        version: 1,
+      },
+    });
+    return serializeProjectWithMilestones(project);
+  });
 
 /**
  * Deletes a project by its ID.
@@ -229,19 +230,19 @@ export const createProjectWithPrd = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const deleteProject = createServerFn({
-	method: "POST",
+  method: "POST",
 }).handler(async ({ data }) => {
-	const { id } = projectByIdSchema.parse(data);
-	const project = await prisma.project.delete({
-		where: { id },
-		include: {
-			milestones: {
-				include: { tasks: true },
-				orderBy: { createdAt: "asc" },
-			},
-		},
-	});
-	return serializeProjectWithMilestones(project);
+  const { id } = projectByIdSchema.parse(data);
+  const project = await prisma.project.delete({
+    where: { id },
+    include: {
+      milestones: {
+        include: { tasks: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+  });
+  return serializeProjectWithMilestones(project);
 });
 
 /**
@@ -253,15 +254,15 @@ export const deleteProject = createServerFn({
  * @returns The serialized project details with nested milestones and tasks.
  */
 export const getMilestonesByProjectId = createServerFn({
-	method: "GET",
+  method: "GET",
 }).handler(async ({ data }) => {
-	const { projectId } = milestoneByProjectSchema.parse(data);
-	const milestones = await prisma.milestone.findMany({
-		where: { projectId },
-		include: { tasks: { orderBy: { createdAt: "asc" } } },
-		orderBy: { createdAt: "asc" },
-	});
-	return milestones.map(serializeMilestone);
+  const { projectId } = milestoneByProjectSchema.parse(data);
+  const milestones = await prisma.milestone.findMany({
+    where: { projectId },
+    include: { tasks: { orderBy: { createdAt: "asc" } } },
+    orderBy: { createdAt: "asc" },
+  });
+  return milestones.map(serializeMilestone);
 });
 
 /**
@@ -273,17 +274,17 @@ export const getMilestonesByProjectId = createServerFn({
  * @returns The serialized milestone details.
  */
 export const createMilestone = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => createMilestoneSchema.parse(input))
-	.handler(async ({ data }) => {
-		const parsed = createMilestoneSchema.parse(data);
-		const milestone = await prisma.milestone.create({
-			data: parsed,
-			include: { tasks: true },
-		});
-		return serializeMilestone(milestone);
-	});
+  .validator((input) => createMilestoneSchema.parse(input))
+  .handler(async ({ data }) => {
+    const parsed = createMilestoneSchema.parse(data);
+    const milestone = await prisma.milestone.create({
+      data: parsed,
+      include: { tasks: true },
+    });
+    return serializeMilestone(milestone);
+  });
 
 /**
  * Updates the status of a milestone.
@@ -294,30 +295,30 @@ export const createMilestone = createServerFn({
  * @returns The serialized milestone details.
  */
 export const updateMilestoneStatus = createServerFn({
-	method: "POST",
+  method: "POST",
 }).handler(async ({ data }) => {
-	const { id, status } = updateMilestoneStatusSchema.parse(data);
-	const milestone = await prisma.milestone.update({
-		where: { id },
-		data: { status },
-		include: { tasks: true },
-	});
-	return serializeMilestone(milestone);
+  const { id, status } = updateMilestoneStatusSchema.parse(data);
+  const milestone = await prisma.milestone.update({
+    where: { id },
+    data: { status },
+    include: { tasks: true },
+  });
+  return serializeMilestone(milestone);
 });
 
 export const updateMilestone = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => updateMilestoneSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id, ...rest } = data;
-		const milestone = await prisma.milestone.update({
-			where: { id },
-			data: rest,
-			include: { tasks: true },
-		});
-		return serializeMilestone(milestone);
-	});
+  .validator((input) => updateMilestoneSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id, ...rest } = data;
+    const milestone = await prisma.milestone.update({
+      where: { id },
+      data: rest,
+      include: { tasks: true },
+    });
+    return serializeMilestone(milestone);
+  });
 
 /**
  * Deletes a milestone.
@@ -328,14 +329,14 @@ export const updateMilestone = createServerFn({
  * @returns The serialized milestone details.
  */
 export const deleteMilestone = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => deleteMilestoneSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id } = data;
-		await prisma.milestone.delete({ where: { id } });
-		return null;
-	});
+  .validator((input) => deleteMilestoneSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id } = data;
+    await prisma.milestone.delete({ where: { id } });
+    return null;
+  });
 
 /**
  * Creates a new task.
@@ -346,14 +347,14 @@ export const deleteMilestone = createServerFn({
  * @returns The serialized task details.
  */
 export const createTask = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => createTaskSchema.parse(input))
-	.handler(async ({ data }) => {
-		const parsed = createTaskSchema.parse(data);
-		const task = await prisma.task.create({ data: parsed });
-		return serializeTask(task);
-	});
+  .validator((input) => createTaskSchema.parse(input))
+  .handler(async ({ data }) => {
+    const parsed = createTaskSchema.parse(data);
+    const task = await prisma.task.create({ data: parsed });
+    return serializeTask(task);
+  });
 
 /**
  * Updates the status of a task.
@@ -364,14 +365,14 @@ export const createTask = createServerFn({
  * @returns The serialized task details.
  */
 export const updateTaskStatus = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => updateTaskStatusSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id, status } = updateTaskStatusSchema.parse(data);
-		const task = await prisma.task.update({ where: { id }, data: { status } });
-		return serializeTask(task);
-	});
+  .validator((input) => updateTaskStatusSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id, status } = updateTaskStatusSchema.parse(data);
+    const task = await prisma.task.update({ where: { id }, data: { status } });
+    return serializeTask(task);
+  });
 
 /**
  * Updates a task.
@@ -382,14 +383,14 @@ export const updateTaskStatus = createServerFn({
  * @returns The serialized task details.
  */
 export const updateTask = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => updateTaskSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id, ...rest } = updateTaskSchema.parse(data);
-		const task = await prisma.task.update({ where: { id }, data: rest });
-		return serializeTask(task);
-	});
+  .validator((input) => updateTaskSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id, ...rest } = updateTaskSchema.parse(data);
+    const task = await prisma.task.update({ where: { id }, data: rest });
+    return serializeTask(task);
+  });
 
 /**
  * Deletes a task by ID.
@@ -400,14 +401,14 @@ export const updateTask = createServerFn({
  * @returns null
  */
 export const deleteTask = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => deleteTaskSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id } = deleteTaskSchema.parse(data);
-		await prisma.task.delete({ where: { id } });
-		return null;
-	});
+  .validator((input) => deleteTaskSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id } = deleteTaskSchema.parse(data);
+    await prisma.task.delete({ where: { id } });
+    return null;
+  });
 
 /**
  * Fetches a project document by ID.
@@ -418,17 +419,17 @@ export const deleteTask = createServerFn({
  * @returns The serialized document details.
  */
 export const getProjectDocument = createServerFn({
-	method: "GET",
+  method: "GET",
 })
-	.validator((input) => z.object({ id: z.string().uuid() }).parse(input))
-	.handler(async ({ data }) => {
-		const { id } = data;
-		const document = await prisma.projectDocument.findUnique({
-			where: { id },
-		});
-		if (!document) return null;
-		return serializeDocument(document);
-	});
+  .validator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const { id } = data;
+    const document = await prisma.projectDocument.findUnique({
+      where: { id },
+    });
+    if (!document) return null;
+    return serializeDocument(document);
+  });
 
 /**
  * Updates a project document.
@@ -439,17 +440,17 @@ export const getProjectDocument = createServerFn({
  * @returns The serialized document details.
  */
 export const updateProjectDocument = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => updateProjectDocumentSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id, ...rest } = updateProjectDocumentSchema.parse(data);
-		const document = await prisma.projectDocument.update({
-			where: { id },
-			data: rest,
-		});
-		return serializeDocument(document);
-	});
+  .validator((input) => updateProjectDocumentSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id, ...rest } = updateProjectDocumentSchema.parse(data);
+    const document = await prisma.projectDocument.update({
+      where: { id },
+      data: rest,
+    });
+    return serializeDocument(document);
+  });
 
 /**
  * Deletes a project document by ID.
@@ -460,11 +461,11 @@ export const updateProjectDocument = createServerFn({
  * @returns null
  */
 export const deleteProjectDocument = createServerFn({
-	method: "POST",
+  method: "POST",
 })
-	.validator((input) => deleteProjectDocumentSchema.parse(input))
-	.handler(async ({ data }) => {
-		const { id } = deleteProjectDocumentSchema.parse(data);
-		await prisma.projectDocument.delete({ where: { id } });
-		return null;
-	});
+  .validator((input) => deleteProjectDocumentSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { id } = deleteProjectDocumentSchema.parse(data);
+    await prisma.projectDocument.delete({ where: { id } });
+    return null;
+  });
