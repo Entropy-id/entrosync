@@ -44,7 +44,9 @@ function RouteComponent() {
 		await logoutHandler();
 	}
 
-	const [currentSection, setCurrentSection] = useState<Section>(tab);
+	const [currentSection, setCurrentSection] = useState<Section>(
+		tab ?? "Dashboard",
+	);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	function handleChangeSection(section: Section) {
