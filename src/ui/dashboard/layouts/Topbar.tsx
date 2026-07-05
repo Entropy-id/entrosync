@@ -1,10 +1,28 @@
-import { Bell, Menu, Moon, Search } from "lucide-react";
+import { LogOut, Menu, Search } from "lucide-react";
+
+interface User {
+	name?: string | null;
+	email?: string | null;
+	image?: string | null;
+}
 
 interface TopbarProps {
 	onMenuClick?: () => void;
+	user?: User;
+	onLogout?: () => void;
 }
 
-export function Topbar({ onMenuClick }: TopbarProps) {
+function getInitials(name?: string | null) {
+	if (!name) return "U";
+	return name
+		.split(" ")
+		.map((n) => n[0])
+		.join("")
+		.toUpperCase()
+		.slice(0, 2);
+}
+
+export function Topbar({ onMenuClick, user, onLogout }: TopbarProps) {
 	return (
 		<div className="sticky top-0 z-10 bg-zinc-950 border-b border-neutral-800 px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
 			<div className="flex items-center gap-3 sm:gap-4">
@@ -25,34 +43,50 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 					/>
 				</div>
 
-				<div className="flex items-center gap-1 sm:gap-2">
-					<button
-						type="button"
-						className="p-2 sm:p-2.5 rounded-lg hover:bg-neutral-800 text-gray-100 relative"
-					>
-						<Bell size={18} />
-						<span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2.5 w-1.5 h-1.5 rounded-full bg-red-500" />
-					</button>
-					<button
-						type="button"
-						className="p-2 sm:p-2.5 rounded-lg hover:bg-neutral-800 text-gray-100"
-					>
-						<Moon size={18} />
-					</button>
-				</div>
+				{/*<div className="flex items-center gap-1 sm:gap-2">
+          <button
+            type="button"
+            className="p-2 sm:p-2.5 rounded-lg hover:bg-neutral-800 text-gray-100 relative"
+          >
+            <Bell size={18} />
+            <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2.5 w-1.5 h-1.5 rounded-full bg-red-500" />
+          </button>
+          <button
+            type="button"
+            className="p-2 sm:p-2.5 rounded-lg hover:bg-neutral-800 text-gray-100"
+          >
+            <Moon size={18} />
+          </button>
+        </div>*/}
 
 				<div className="flex items-center gap-2 sm:gap-3 pl-1 sm:pl-2">
 					<div className="hidden sm:block text-right">
-						<p className="text-sm font-medium leading-tight">Zaghy Zalayetha</p>
+						<p className="text-sm font-medium leading-tight">
+							{user?.name ?? "User"}
+						</p>
 						<p className="text-xs text-zinc-500 leading-tight">
-							Software Developer
+							{user?.email ?? ""}
 						</p>
 					</div>
-					<img
-						src="https://i.pravatar.cc/64?img=12"
-						alt="Alex Sterling"
-						className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover"
-					/>
+					{user?.image ? (
+						<img
+							src={user.image}
+							alt={user.name ?? "User"}
+							className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover"
+						/>
+					) : (
+						<div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-zinc-700 flex items-center justify-center text-xs text-zinc-200 font-medium">
+							{getInitials(user?.name)}
+						</div>
+					)}
+					<button
+						type="button"
+						onClick={onLogout}
+						className="p-2 sm:p-2.5 rounded-lg hover:bg-neutral-800 text-gray-100"
+						title="Logout"
+					>
+						<LogOut size={18} />
+					</button>
 				</div>
 			</div>
 		</div>

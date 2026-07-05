@@ -1,4 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestHeaders } from "@tanstack/react-start/server";
+import { auth } from "#/modules/auth/auth.utils";
 import { prisma } from "#/utils/prisma";
 import { recentActivityInputSchema } from "./dashboard.schema";
 
@@ -40,6 +42,10 @@ function mapLogActionToType(action: string) {
 export const getDashboardStats = createServerFn({
 	method: "GET",
 }).handler(async () => {
+	const headers = getRequestHeaders();
+	const session = await auth.api.getSession({ headers });
+	if (!session) throw new Error("Unauthorized");
+
 	const now = new Date();
 	const startOfYear = new Date(now.getFullYear(), 0, 1);
 	const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
@@ -49,12 +55,18 @@ export const getDashboardStats = createServerFn({
 			where: {
 				status: "PAID",
 				issuedDate: { gte: startOfYear, lt: endOfYear },
+				project: { freelancerId: session.user.id },
 			},
 			_sum: { amount: true },
 		}),
-		prisma.project.count({ where: { status: "ON_PROGRESS" } }),
+		prisma.project.count({
+			where: { status: "ON_PROGRESS", freelancerId: session.user.id },
+		}),
 		prisma.invoice.aggregate({
-			where: { status: "PENDING" },
+			where: {
+				status: "PENDING",
+				project: { freelancerId: session.user.id },
+			},
 			_count: { id: true },
 			_sum: { amount: true },
 		}),
@@ -71,9 +83,14 @@ export const getDashboardStats = createServerFn({
 export const getRecentActivity = createServerFn({
 	method: "GET",
 }).handler(async ({ data }) => {
+	const headers = getRequestHeaders();
+	const session = await auth.api.getSession({ headers });
+	if (!session) throw new Error("Unauthorized");
+
 	const { limit } = recentActivityInputSchema.parse(data ?? {});
 
 	const logs = await prisma.projectLog.findMany({
+		where: { project: { freelancerId: session.user.id } },
 		orderBy: { createdAt: "desc" },
 		take: limit,
 		include: { project: { select: { title: true } } },

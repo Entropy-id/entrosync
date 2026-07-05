@@ -1,15 +1,16 @@
+interface Avatar {
+	id?: string;
+	img?: string;
+	initials?: string;
+}
+
 interface ProjectCardProps {
 	title: string;
 	client: string;
 	status: string;
 	statusClass: string;
 	percent: number;
-	avatars: Avatar[];
-}
-interface Avatar {
-	id?: string;
-	img?: string;
-	initials?: string;
+	avatars?: Avatar[];
 }
 
 export function ProjectCard({
@@ -18,7 +19,7 @@ export function ProjectCard({
 	status,
 	statusClass,
 	percent,
-	avatars,
+	avatars = [],
 }: ProjectCardProps) {
 	return (
 		<div className="rounded-2xl bg-zinc-900/50 border border-neutral-800 p-5 flex-1">
@@ -47,25 +48,27 @@ export function ProjectCard({
 				</div>
 			</div>
 
-			<div className="mt-4 flex items-center -space-x-2">
-				{avatars.map((a: Avatar, i: number) =>
-					a.img ? (
-						<img
-							key={a.id ?? a.img}
-							src={a.img}
-							alt=""
-							className="w-7 h-7 rounded-full border-2 border-zinc-900 object-cover"
-						/>
-					) : (
-						<div
-							key={a.id ?? a.initials ?? i}
-							className="w-7 h-7 rounded-full border-2 border-zinc-900 bg-zinc-700 flex items-center justify-center text-[10px] text-zinc-200 font-medium"
-						>
-							{a.initials}
-						</div>
-					),
-				)}
-			</div>
+			{avatars.length > 0 && (
+				<div className="mt-4 flex items-center -space-x-2">
+					{avatars.map((a: Avatar, i: number) =>
+						a.img ? (
+							<img
+								key={a.id ?? a.img}
+								src={a.img}
+								alt=""
+								className="w-7 h-7 rounded-full border-2 border-zinc-900 object-cover"
+							/>
+						) : (
+							<div
+								key={a.id ?? a.initials ?? i}
+								className="w-7 h-7 rounded-full border-2 border-zinc-900 bg-zinc-700 flex items-center justify-center text-[10px] text-zinc-200 font-medium"
+							>
+								{a.initials}
+							</div>
+						),
+					)}
+				</div>
+			)}
 		</div>
 	);
 }

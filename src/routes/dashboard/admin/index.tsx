@@ -1,15 +1,26 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+import { z } from "zod";
 import { getSessionServerFn, logoutServerFn } from "#/modules/auth/auth.api";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
 import { DashboardSection } from "#/ui/dashboard/section/DashboardSection";
 import { InvoicesSection } from "#/ui/dashboard/section/InvoicesSection";
+import { ProjectsSection } from "#/ui/dashboard/section/ProjectsSection";
 
-export type Section = "Dashboard" | "Projects" | "Invoices";
+export type Section = "Dashboard" | "Projects" | "Invoices" | undefined;
+
+const searchSchema = z.object({
+	tab: z
+		.enum(["Dashboard", "Projects", "Invoices"])
+		.optional()
+		.catch("Dashboard"),
+});
+
 export const Route = createFileRoute("/dashboard/admin/")({
 	component: RouteComponent,
+	validateSearch: searchSchema,
 	beforeLoad: async () => {
 		const session = await getSessionServerFn();
 
@@ -24,38 +35,43 @@ export const Route = createFileRoute("/dashboard/admin/")({
 });
 
 function RouteComponent() {
-	const logoutServerFnHandler = useServerFn(logoutServerFn);
-	const _session = Route.useRouteContext();
+	const navigate = useNavigate();
+	const logoutHandler = useServerFn(logoutServerFn);
+	const session = Route.useRouteContext();
+	const { tab } = Route.useSearch();
 
-	async function _handleLogout() {
-		await logoutServerFnHandler();
+	async function handleLogout() {
+		await logoutHandler();
 	}
 
-	const [currentSection, setCurrentSection] = useState<Section>("Dashboard");
+	const [currentSection, setCurrentSection] = useState<Section>(
+		tab ?? "Dashboard",
+	);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+	function handleChangeSection(section: Section) {
+		setCurrentSection(section);
+		if (section === "Invoices") {
+			setInvoiceInitialView("list");
+		}
+		navigate({ to: "/dashboard/admin", search: { tab: section } });
+	}
 	const [invoiceInitialView, setInvoiceInitialView] = useState<
 		"list" | "generator"
 	>("list");
 
-	function handleGenerateInvoice() {
-		setCurrentSection("Invoices");
-		setInvoiceInitialView("generator");
-		setMobileMenuOpen(false);
-	}
+	// function handleGenerateInvoice() {
+	//   setCurrentSection("Invoices");
+	//   setInvoiceInitialView("generator");
+	//   setMobileMenuOpen(false);
+	// }
 
 	return (
 		<div className="min-h-screen w-full flex font-inter">
 			{/*Sidebar*/}
 			<Sidebar
 				currentSection={currentSection}
-				onChangeSection={(section) => {
-					setCurrentSection(section);
-					if (section === "Invoices") {
-						setInvoiceInitialView("list");
-					}
-				}}
-				onGenerateInvoice={handleGenerateInvoice}
+				onChangeSection={handleChangeSection}
 				mobileOpen={mobileMenuOpen}
 				onClose={() => setMobileMenuOpen(false)}
 			/>
@@ -63,7 +79,11 @@ function RouteComponent() {
 			{/*Main*/}
 			<main className="flex-1 min-w-0">
 				{/*Top Bar*/}
-				<Topbar onMenuClick={() => setMobileMenuOpen(true)} />
+				<Topbar
+					onMenuClick={() => setMobileMenuOpen(true)}
+					user={session?.user}
+					onLogout={handleLogout}
+				/>
 
 				{/*Content*/}
 				<div className="max-w-6xl px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
@@ -74,7 +94,7 @@ function RouteComponent() {
 
 					{/*Projects*/}
 					<section className={currentSection === "Projects" ? "" : "hidden"}>
-						Projects Section
+						<ProjectsSection />
 					</section>
 					{/*Invoices*/}
 					<section className={currentSection === "Invoices" ? "" : "hidden"}>

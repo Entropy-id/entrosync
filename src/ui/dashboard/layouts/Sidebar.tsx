@@ -12,7 +12,7 @@ import type { Section } from "#/routes/dashboard/admin";
 import { NavItem } from "../components/NavItem";
 
 interface NavItemConfig {
-	id: Section;
+	id: Exclude<Section, undefined>;
 	icon: LucideIcon;
 }
 const navItems: NavItemConfig[] = [

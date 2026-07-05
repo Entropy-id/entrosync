@@ -1,8 +1,15 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { getSessionServerFn } from "#/modules/auth/auth.api";
 import { LoginPage } from "#/ui/auth/section/LoginPage";
 
 export const Route = createFileRoute("/login/")({
 	component: RouteComponent,
+	beforeLoad: async () => {
+		const session = await getSessionServerFn();
+		if (session) {
+			throw redirect({ to: "/dashboard/admin" });
+		}
+	},
 });
 
 function RouteComponent() {
