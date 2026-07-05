@@ -21,6 +21,7 @@ interface Project {
   startDate: string | null;
   dueDate: string | null;
   milestones: {
+    id: string;
     title: string;
     projectId: string;
     description: string | null;
