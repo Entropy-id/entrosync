@@ -43,7 +43,12 @@ import {
 export const getProjects = createServerFn({
   method: "GET",
 }).handler(async () => {
+  const headers = getRequestHeaders();
+  const session = await auth.api.getSession({ headers });
+  if (!session) throw new Error("Unauthorized");
+
   const projects = await prisma.project.findMany({
+    where: { freelancerId: session.user.id },
     include: {
       client: { select: { name: true } },
       milestones: {
@@ -68,9 +73,13 @@ export const getProjects = createServerFn({
 export const getProjectById = createServerFn({
   method: "GET",
 }).handler(async ({ data }) => {
+  const headers = getRequestHeaders();
+  const session = await auth.api.getSession({ headers });
+  if (!session) throw new Error("Unauthorized");
+
   const { id } = projectByIdSchema.parse(data);
   const project = await prisma.project.findUnique({
-    where: { id },
+    where: { id, freelancerId: session.user.id },
     include: {
       milestones: {
         include: { tasks: true },
@@ -100,8 +109,13 @@ export const getProjectByTitle = createServerFn({
 })
   .validator((input) => projectByTitleSchema.parse(input))
   .handler(async ({ data }) => {
+    const headers = getRequestHeaders();
+    const session = await auth.api.getSession({ headers });
+    if (!session) throw new Error("Unauthorized");
+
     const { title } = data;
     const projects = await prisma.project.findMany({
+      where: { freelancerId: session.user.id },
       include: {
         milestones: {
           include: { tasks: true },
