@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { Pencil, Plus } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { EllipsisVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { slugify } from "#/modules/project/project.mock";
 import type { MilestoneDraft } from "../hooks/useMilestones";
 
@@ -32,6 +33,18 @@ export function ProjectMilestones({
   projectId: string;
 }) {
   const navigate = useNavigate();
+  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuIndex(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div>
@@ -161,46 +174,49 @@ export function ProjectMilestones({
                     <span>{m.tasks} Task</span>
                     <span>•</span>
                     <span>{m.completion}</span>
+                    {/* Dropdown menu */}
+                    <div ref={openMenuIndex === i ? menuRef : null}>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuIndex(openMenuIndex === i ? null : i);
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/70 hover:text-gray-100"
+                      >
+                        <EllipsisVertical size={14} />
+                      </button>
+                      {openMenuIndex === i && (
+                        <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-neutral-800 rounded-lg shadow-lg overflow-hidden z-10">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuIndex(null);
+                              handleEdit(i);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-100 hover:bg-neutral-800 transition-colors"
+                          >
+                            <Pencil size={12} />
+                            Edit
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuIndex(null);
+                              handleDelete(i);
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-neutral-800 transition-colors"
+                          >
+                            <Trash2 size={12} />
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <p className="text-sm text-gray-100/50 line-clamp-2">
                   {m.description}
                 </p>
-                {/* Hover actions */}
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(i);
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-gray-100"
-                  >
-                    <Pencil size={12} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(i);
-                    }}
-                    className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/50 hover:text-red-400"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M3 6h18" />
-                      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    </svg>
-                  </button>
-                </div>
               </div>
             )}
           </div>
