@@ -28,7 +28,7 @@ function getPriorityStyle(_status: string) {
   // Map project status to a color badge
   switch (_status) {
     case "ON_PROGRESS":
-      return "bg-yellow-500 text-black";
+      return "bg-sky-500 text-white";
     case "DONE":
       return "bg-emerald-500 text-white";
     default:
@@ -43,7 +43,7 @@ function getPriorityLabel(status: string) {
     case "DONE":
       return "Completed";
     default:
-      return "Pending";
+      return "Not Started";
   }
 }
 

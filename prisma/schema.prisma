@@ -14,18 +14,18 @@ enum Role {
 
 enum ProjectStatus {
   ON_PROGRESS
-  PENDING
+  NOT_STARTED
   DONE
 }
 
 enum MilestoneStatus {
-  PENDING
+  NOT_STARTED
   IN_PROGRESS
   DONE
 }
 
 enum TaskStatus {
-  PENDING
+  NOT_STARTED
   IN_PROGRESS
   DONE
 }
@@ -75,7 +75,7 @@ model Project {
   title        String
   description  String?       @db.Text
   progress     String        @default("0%")
-  status       ProjectStatus @default(PENDING)
+  status       ProjectStatus @default(NOT_STARTED)
   startDate    DateTime?     @map("start_date")
   dueDate      DateTime?     @map("due_date")
   createdAt    DateTime      @default(now()) @map("created_at")
@@ -98,7 +98,7 @@ model Milestone {
   projectId   String          @map("project_id")
   title       String
   description String?         @db.Text
-  status      MilestoneStatus @default(PENDING)
+  status      MilestoneStatus @default(NOT_STARTED)
   startDate   DateTime?       @map("start_date")
   dueDate     DateTime?       @map("due_date")
   createdAt   DateTime        @default(now()) @map("created_at")
@@ -115,7 +115,7 @@ model Task {
   milestoneId String     @map("milestone_id")
   title       String
   description String?    @db.Text
-  status      TaskStatus @default(PENDING)
+  status      TaskStatus @default(NOT_STARTED)
   startDate   DateTime?  @map("start_date")
   dueDate     DateTime?  @map("due_date")
   createdAt   DateTime   @default(now()) @map("created_at")

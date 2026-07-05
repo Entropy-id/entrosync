@@ -42,7 +42,7 @@ export const Route = createFileRoute(
 
 function apiStatusToDisplay(status: string): string {
   switch (status) {
-    case "PENDING":
+    case "NOT_STARTED":
       return "Not Started";
     case "IN_PROGRESS":
       return "In Progress";

@@ -1,15 +1,15 @@
 export function apiStatusToDisplay(s: string) {
-  if (s === "PENDING") return "Not Started";
+  if (s === "NOT_STARTED") return "Not Started";
   if (s === "ON_PROGRESS") return "In Progress";
   if (s === "DONE") return "Completed";
   return "Not Started";
 }
 
 export function displayStatusToApi(s: string) {
-  if (s === "Not Started") return "PENDING";
+  if (s === "Not Started") return "NOT_STARTED";
   if (s === "In Progress") return "ON_PROGRESS";
   if (s === "Completed") return "DONE";
-  return "PENDING";
+  return "NOT_STARTED";
 }
 
 export function getStatusStyle(s: string) {
@@ -40,7 +40,9 @@ export function formatDisplayDate(iso: string | null): string {
   return `${Number(day)} ${months[Number(month) - 1]} ${year}`;
 }
 
-export function computeMilestoneCompletion(tasks: { status: string }[]): string {
+export function computeMilestoneCompletion(
+  tasks: { status: string }[],
+): string {
   if (tasks.length === 0) return "0%";
   const done = tasks.filter((t) => t.status === "DONE").length;
   return `${Math.round((done / tasks.length) * 100)}%`;

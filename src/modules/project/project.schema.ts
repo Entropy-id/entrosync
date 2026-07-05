@@ -1,9 +1,9 @@
 import { start } from "node:repl";
 import { z } from "zod";
 
-export const ProjectStatus = z.enum(["PENDING", "ON_PROGRESS", "DONE"]);
-export const MilestoneStatus = z.enum(["PENDING", "IN_PROGRESS", "DONE"]);
-export const TaskStatus = z.enum(["PENDING", "IN_PROGRESS", "DONE"]);
+export const ProjectStatus = z.enum(["NOT_STARTED", "ON_PROGRESS", "DONE"]);
+export const MilestoneStatus = z.enum(["NOT_STARTED", "IN_PROGRESS", "DONE"]);
+export const TaskStatus = z.enum(["NOT_STARTED", "IN_PROGRESS", "DONE"]);
 
 export const createProjectSchema = z.object({
   title: z.string().min(1, "Title is required"),

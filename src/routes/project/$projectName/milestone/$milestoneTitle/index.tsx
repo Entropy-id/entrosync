@@ -117,7 +117,7 @@ function MilestoneDetailPage() {
         description: draftTask.description,
         dueDate: draftTask.dueDate,
         startDate: "",
-        status: "PENDING" as const,
+        status: "NOT_STARTED" as const,
         milestoneId: milestone.id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
