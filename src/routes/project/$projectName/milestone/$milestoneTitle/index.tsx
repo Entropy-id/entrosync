@@ -406,7 +406,7 @@ function MilestoneDetailPage() {
                     <td className="py-4 px-4">{task.id.slice(0, 8)}</td>
                     <td className="py-4 px-4">{task.name}</td>
                     <td className="py-4 px-4">{task.dueDate}</td>
-                    <td className="py-4 px-4">
+                    {/*<td className="py-4 px-4">
                       <div
                         ref={openMenuIndex === i ? menuRef : null}
                         className="relative inline-block"
@@ -417,12 +417,12 @@ function MilestoneDetailPage() {
                             e.stopPropagation();
                             setOpenMenuIndex(openMenuIndex === i ? null : i);
                           }}
-                          className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/70 hover:text-gray-100"
+                          className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/70 hover:text-gray-100 transition-colors"
                         >
                           <EllipsisVertical size={14} />
                         </button>
                         {openMenuIndex === i && (
-                          <div className="absolute right-0 mt-1 w-32 bg-zinc-900 border border-neutral-800 rounded-lg shadow-lg overflow-hidden z-10">
+                          <div className="absolute right-0 top-full mt-2 w-40 bg-zinc-900 border border-neutral-700/80 rounded-xl shadow-2xl shadow-black/40 z-50 py-1 text-left">
                             <button
                               type="button"
                               onClick={(e) => {
@@ -437,11 +437,12 @@ function MilestoneDetailPage() {
                                   },
                                 });
                               }}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-100 hover:bg-neutral-800 transition-colors"
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-100 hover:bg-neutral-800 transition-colors"
                             >
-                              <Pencil size={12} />
+                              <Pencil size={14} />
                               Edit
                             </button>
+                            <div className="h-px bg-neutral-800 mx-1" />
                             <button
                               type="button"
                               onClick={(e) => {
@@ -449,15 +450,15 @@ function MilestoneDetailPage() {
                                 handleDeleteTask(i);
                               }}
                               disabled={deletingIndex === i}
-                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-neutral-800 transition-colors disabled:opacity-50"
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors disabled:opacity-50"
                             >
-                              <Trash2 size={12} />
+                              <Trash2 size={14} />
                               {deletingIndex === i ? "Deleting..." : "Delete"}
                             </button>
                           </div>
                         )}
                       </div>
-                    </td>
+                    </td>*/}
                   </tr>
                 ))}
               </tbody>
