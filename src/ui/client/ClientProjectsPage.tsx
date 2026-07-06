@@ -12,7 +12,7 @@ type Milestone = {
   description: string | null;
   status: string;
   dueDate: string | null;
-  tasks: Task[];
+  tasks?: Task[];
 };
 
 type Project = {
@@ -20,7 +20,7 @@ type Project = {
   title: string;
   description: string | null;
   status: string;
-  milestones: Milestone[];
+  milestones?: Milestone[];
 };
 
 function TaskStatusIcon({ status }: { status: string }) {
@@ -68,16 +68,17 @@ function MilestoneStatusBadge({ status }: { status: string }) {
 }
 
 export function ClientProjectsPage({ project }: { project: Project }) {
-  const totalTasks = project.milestones.reduce(
-    (sum, m) => sum + m.tasks.length,
-    0,
-  );
-  const completedTasks = project.milestones
-    .flatMap((m) => m.tasks)
-    .filter((t) => t.status === "DONE").length;
-  const inProgressTasks = project.milestones
-    .flatMap((m) => m.tasks)
-    .filter((t) => t.status === "IN_PROGRESS").length;
+  const totalTasks =
+    project.milestones?.reduce((sum, m) => sum + (m.tasks?.length ?? 0), 0) ??
+    0;
+  const completedTasks =
+    project.milestones
+      ?.flatMap((m) => m.tasks ?? [])
+      ?.filter((t) => t.status === "DONE")?.length ?? 0;
+  const inProgressTasks =
+    project.milestones
+      ?.flatMap((m) => m.tasks ?? [])
+      ?.filter((t) => t.status === "IN_PROGRESS")?.length ?? 0;
 
   return (
     <div className="space-y-8">
@@ -97,7 +98,7 @@ export function ClientProjectsPage({ project }: { project: Project }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-5 text-center">
           <p className="text-2xl font-semibold text-white">
-            {project.milestones.length}
+            {project.milestones?.length ?? 0}
           </p>
           <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase mt-1">
             Milestones
@@ -129,11 +130,10 @@ export function ClientProjectsPage({ project }: { project: Project }) {
 
       {/* Milestones */}
       <div className="space-y-6">
-        {project.milestones.map((milestone) => {
-          const completedCount = milestone.tasks.filter(
-            (t) => t.status === "DONE",
-          ).length;
-          const totalCount = milestone.tasks.length;
+        {project.milestones?.map((milestone) => {
+          const completedCount =
+            milestone.tasks?.filter((t) => t.status === "DONE")?.length ?? 0;
+          const totalCount = milestone.tasks?.length ?? 0;
           const milestonePercent =
             totalCount > 0
               ? Math.round((completedCount / totalCount) * 100)
@@ -173,9 +173,9 @@ export function ClientProjectsPage({ project }: { project: Project }) {
               </div>
 
               {/* Task list */}
-              {milestone.tasks.length > 0 && (
+              {(milestone.tasks?.length ?? 0) > 0 && (
                 <div className="space-y-2 border-t border-neutral-800 pt-4">
-                  {milestone.tasks.map((task) => (
+                  {milestone.tasks?.map((task) => (
                     <div key={task.id} className="flex items-center gap-3 py-2">
                       <TaskStatusIcon status={task.status} />
                       <span
