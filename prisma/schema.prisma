@@ -60,10 +60,11 @@ model User {
   ownedProjects  Project[] @relation("FreelancerProjects")
   clientProjects Project[] @relation("ClientProjects")
 
-  emailVerified Boolean   @default(false)
-  image         String?
-  sessions      Session[]
-  accounts      Account[]
+  emailVerified       Boolean   @default(false)
+  image               String?
+  onboardingCompleted Boolean   @default(false)
+  sessions            Session[]
+  accounts            Account[]
 
   @@map("users")
 }
