@@ -1,5 +1,6 @@
+import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { updateProject } from "#/modules/project/project.api";
 import {
 	apiStatusToDisplay,
@@ -31,10 +32,18 @@ export function ProjectProperties({
 	const startDateRef = useRef<HTMLInputElement>(null);
 	const dueDateRef = useRef<HTMLInputElement>(null);
 	const updateProjectFn = useServerFn(updateProject);
+	const router = useRouter();
+
+	useEffect(() => {
+		setStatus(apiStatusToDisplay(initialStatus));
+		setStartDate((initialStartDate || "").slice(0, 10));
+		setDueDate((initialDueDate || "").slice(0, 10));
+	}, [initialStatus, initialStartDate, initialDueDate]);
 
 	async function patch(data: Record<string, unknown>, rollback: () => void) {
 		try {
 			await updateProjectFn({ data: { id: projectId, ...data } });
+			await router.invalidate();
 		} catch (err) {
 			console.error("Failed to update project", err);
 			rollback();
