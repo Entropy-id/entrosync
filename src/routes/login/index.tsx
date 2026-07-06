@@ -1,27 +1,30 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { getSessionServerFn } from "#/modules/auth/auth.api";
+import { getSessionWithOnboardingServerFn } from "#/modules/auth/auth.api";
 import { LoginPage } from "#/ui/auth/section/LoginPage";
 
 export const Route = createFileRoute("/login/")({
-	component: RouteComponent,
-	beforeLoad: async () => {
-		const session = await getSessionServerFn();
-		if (session) {
-			throw redirect({ to: "/dashboard/admin" });
-		}
-	},
+  component: RouteComponent,
+  beforeLoad: async () => {
+    const result = await getSessionWithOnboardingServerFn();
+    if (result) {
+      const { onboardingCompleted } = result;
+      throw redirect({
+        to: onboardingCompleted ? "/dashboard/admin" : "/onboarding",
+      });
+    }
+  },
 });
 
 function RouteComponent() {
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
-	const handleNavigateToRegister = () => {
-		navigate({ to: "/register" });
-	};
+  const handleNavigateToRegister = () => {
+    navigate({ to: "/register" });
+  };
 
-	return (
-		<div className="min-h-screen bg-black text-white font-inter">
-			<LoginPage onToggle={handleNavigateToRegister} />
-		</div>
-	);
+  return (
+    <div className="min-h-screen bg-black text-white font-inter">
+      <LoginPage onToggle={handleNavigateToRegister} />
+    </div>
+  );
 }
