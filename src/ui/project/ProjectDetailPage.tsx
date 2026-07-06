@@ -1,16 +1,22 @@
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
+import { deleteProject } from "#/modules/project/project.api";
 import type { Section } from "#/routes/dashboard/admin";
 import { Sidebar } from "#/ui/dashboard/layouts/Sidebar";
+import type { User } from "#/ui/dashboard/layouts/Topbar";
 import { Topbar } from "#/ui/dashboard/layouts/Topbar";
 import { EditableDescription } from "./components/EditableDescription";
 import { EditableName } from "./components/EditableName";
+import { InviteClientModal } from "./components/InviteClientModal";
 import { ProjectBreadcrumb } from "./components/ProjectBreadcrumb";
 import { ProjectMilestones } from "./components/ProjectMilestones";
 import { ProjectMiniMilestones } from "./components/ProjectMiniMilestones";
 import { ProjectProgress } from "./components/ProjectProgress";
 import { ProjectProperties } from "./components/ProjectProperties";
 import { ProjectResources } from "./components/ProjectResources";
+import { SentInvitesList } from "./components/SentInvitesList";
 import { useMilestones } from "./hooks/useMilestones";
 
 interface Project {
@@ -40,9 +46,18 @@ interface Project {
 	}[];
 }
 
-export function ProjectDetailPage({ project }: { project: Project }) {
+export function ProjectDetailPage({
+	project,
+	user,
+}: {
+	project: Project;
+	user?: User;
+}) {
 	const navigate = useNavigate();
+	const deleteProjectFn = useServerFn(deleteProject);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+	const [inviteModalOpen, setInviteModalOpen] = useState(false);
+	const [deleting, setDeleting] = useState(false);
 
 	const {
 		milestones,
@@ -60,6 +75,24 @@ export function ProjectDetailPage({ project }: { project: Project }) {
 		navigate({ to: "/dashboard/admin", search: { tab: "Projects" } });
 	}
 
+	async function handleDeleteProject() {
+		const confirmed = window.confirm(
+			`Are you sure you want to delete "${project.title}"? This action cannot be undone.`,
+		);
+		if (!confirmed) return;
+
+		setDeleting(true);
+		try {
+			await deleteProjectFn({ data: { id: project.id } });
+			navigate({ to: "/dashboard/admin", search: { tab: "Projects" } });
+		} catch (err) {
+			console.error("Failed to delete project", err);
+			alert("Failed to delete project. Please try again.");
+		} finally {
+			setDeleting(false);
+		}
+	}
+
 	return (
 		<div className="min-h-screen w-full flex font-inter">
 			<Sidebar
@@ -70,7 +103,7 @@ export function ProjectDetailPage({ project }: { project: Project }) {
 			/>
 
 			<main className="flex-1 min-w-0">
-				<Topbar onMenuClick={() => setMobileMenuOpen(true)} />
+				<Topbar onMenuClick={() => setMobileMenuOpen(true)} user={user} />
 
 				<ProjectBreadcrumb name={project.title} />
 
@@ -124,7 +157,52 @@ export function ProjectDetailPage({ project }: { project: Project }) {
 							/>
 
 							<ProjectProgress milestones={project.milestones} />
+
+							<div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-5 space-y-4">
+								<h3 className="text-sm font-semibold text-gray-100">
+									Client Access
+								</h3>
+								<p className="text-xs text-gray-400">
+									Generate a secure link so your client can view project
+									progress without logging in.
+								</p>
+								<button
+									type="button"
+									onClick={() => setInviteModalOpen(true)}
+									className="w-full bg-white text-black text-sm font-bold rounded-full py-2.5 hover:bg-zinc-200 transition-colors"
+								>
+									Invite Client
+								</button>
+								<SentInvitesList projectId={project.id} />
+							</div>
+
+							<div className="bg-zinc-900/50 border border-red-500/20 rounded-2xl p-5 space-y-4">
+								<h3 className="text-sm font-semibold text-red-400">
+									Danger Zone
+								</h3>
+								<p className="text-xs text-gray-400">
+									Deleting this project will remove all milestones, tasks,
+									invoices, and resources permanently.
+								</p>
+								<button
+									type="button"
+									onClick={handleDeleteProject}
+									disabled={deleting}
+									className="w-full border border-red-500/30 text-red-400 text-sm font-bold rounded-full py-2.5 hover:bg-red-500/10 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+								>
+									<Trash2 size={16} />
+									{deleting ? "Deleting..." : "Delete Project"}
+								</button>
+							</div>
 						</div>
+
+						{inviteModalOpen && (
+							<InviteClientModal
+								projectId={project.id}
+								projectTitle={project.title}
+								onClose={() => setInviteModalOpen(false)}
+							/>
+						)}
 					</div>
 				</div>
 			</main>

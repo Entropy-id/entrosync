@@ -1,6 +1,7 @@
+import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { updateProject } from "#/modules/project/project.api";
 
@@ -15,6 +16,11 @@ export function EditableDescription({
 	const [editing, setEditing] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	const updateProjectFn = useServerFn(updateProject);
+	const router = useRouter();
+
+	useEffect(() => {
+		setDescription(initialDescription || "");
+	}, [initialDescription]);
 
 	const handleSave = useCallback(async () => {
 		setEditing(false);
@@ -23,11 +29,12 @@ export function EditableDescription({
 			await updateProjectFn({
 				data: { id: projectId, description },
 			});
+			await router.invalidate();
 		} catch (err) {
 			console.error("Failed to update project description", err);
 			setDescription(initialDescription ?? "");
 		}
-	}, [description, projectId, initialDescription, updateProjectFn]);
+	}, [description, projectId, initialDescription, updateProjectFn, router]);
 
 	return (
 		<div className="mb-10">

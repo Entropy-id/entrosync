@@ -3,6 +3,7 @@ import {
 	notFound,
 	redirect,
 	useNavigate,
+	useRouter,
 } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { EllipsisVertical, Pencil, Plus, Trash2 } from "lucide-react";
@@ -40,6 +41,7 @@ export const Route = createFileRoute(
 		if (!milestone) throw notFound();
 		return { project, milestone };
 	},
+	staleTime: 30_000,
 });
 
 function formatDisplayDate(iso: string | null): string {
@@ -115,7 +117,9 @@ function ErrorMessage({ message }: { message: string }) {
 
 function MilestoneDetailPage() {
 	const navigate = useNavigate();
+	const router = useRouter();
 	const { project, milestone } = Route.useLoaderData();
+	const session = Route.useRouteContext();
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [feedback, setFeedback] = useState<Feedback>(null);
 	const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
@@ -149,6 +153,17 @@ function MilestoneDetailPage() {
 			dueDate: formatDisplayDate(t.dueDate),
 		})),
 	);
+
+	useEffect(() => {
+		setTasks(
+			milestone.tasks.map((t) => ({
+				...t,
+				name: t.title,
+				dueDate: formatDisplayDate(t.dueDate),
+			})),
+		);
+	}, [milestone.tasks]);
+
 	const [showCreateForm, setShowCreateForm] = useState(false);
 	const [saving, setSaving] = useState(false);
 	const [deletingIndex, setDeletingIndex] = useState<number | null>(null);
@@ -188,6 +203,7 @@ function MilestoneDetailPage() {
 			setDraftTask({ name: "", description: "", dueDate: "" });
 			setShowCreateForm(false);
 			showSuccess("Task created successfully.");
+			await router.invalidate();
 		} catch (error) {
 			console.error("Failed to create task", error);
 			showError("Failed to create task. Please try again.");
@@ -205,6 +221,7 @@ function MilestoneDetailPage() {
 			await deleteTaskFn({ data: { id: task.id } });
 			setTasks((prev) => prev.filter((_, i) => i !== index));
 			showSuccess("Task deleted successfully.");
+			await router.invalidate();
 		} catch (error) {
 			console.error("Failed to delete task", error);
 			showError("Failed to delete task. Please try again.");
@@ -229,7 +246,10 @@ function MilestoneDetailPage() {
 			/>
 
 			<main className="flex-1 min-w-0">
-				<Topbar onMenuClick={() => setMobileMenuOpen(true)} />
+				<Topbar
+					onMenuClick={() => setMobileMenuOpen(true)}
+					user={session?.user}
+				/>
 
 				{/* Breadcrumb */}
 				<div className="max-w-6xl mx-auto px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8 lg:pt-6">
@@ -385,17 +405,16 @@ function MilestoneDetailPage() {
 										<td className="py-4 px-4">{task.name}</td>
 										<td className="py-4 px-4">{task.dueDate}</td>
 										<td className="py-4 px-4">
-											<button
-												type="button"
-												// ref={openMenuIndex === i ? menuRef : null}
-												className="relative"
-												onClick={(e) => e.stopPropagation()}
+											<div
+												ref={openMenuIndex === i ? menuRef : null}
+												className="relative inline-block"
 											>
 												<button
 													type="button"
-													onClick={() =>
-														setOpenMenuIndex(openMenuIndex === i ? null : i)
-													}
+													onClick={(e) => {
+														e.stopPropagation();
+														setOpenMenuIndex(openMenuIndex === i ? null : i);
+													}}
 													className="p-1.5 rounded-lg hover:bg-neutral-800 text-gray-100/70 hover:text-gray-100"
 												>
 													<EllipsisVertical size={14} />
@@ -435,7 +454,7 @@ function MilestoneDetailPage() {
 														</button>
 													</div>
 												)}
-											</button>
+											</div>
 										</td>
 									</tr>
 								))}
