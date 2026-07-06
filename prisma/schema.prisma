@@ -105,7 +105,7 @@ model Milestone {
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tasks   Task[]
 
   @@map("milestones")
@@ -122,7 +122,7 @@ model Task {
   createdAt   DateTime   @default(now()) @map("created_at")
   updatedAt   DateTime   @updatedAt @map("updated_at")
 
-  milestone Milestone @relation(fields: [milestoneId], references: [id])
+  milestone Milestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
 
   @@map("tasks")
 }
@@ -137,7 +137,7 @@ model Invoice {
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("invoices")
 }
@@ -151,7 +151,7 @@ model Feedback {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("feedbacks")
 }
@@ -165,7 +165,7 @@ model Resource {
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("resources")
 }
@@ -179,7 +179,7 @@ model ProjectDocument {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("project_documents")
 }
@@ -191,7 +191,7 @@ model ProjectLog {
   description String?  @db.Text
   createdAt   DateTime @default(now()) @map("created_at")
 
-  project Project @relation(fields: [projectId], references: [id])
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("project_logs")
 }
