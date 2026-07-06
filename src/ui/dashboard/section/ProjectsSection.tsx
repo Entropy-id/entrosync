@@ -4,7 +4,6 @@ import { FolderPlus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { deleteProject, getProjects } from "#/modules/project/project.api";
 import { slugify } from "#/modules/project/project.mock";
-import { CreateProjectModal } from "./CreateProjectModal";
 
 interface ProjectRow {
   id: string;
@@ -64,7 +63,6 @@ export function ProjectsSection() {
   const deleteProjectFn = useServerFn(deleteProject);
   const [projects, setProjects] = useState<ProjectRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
@@ -122,7 +120,7 @@ export function ProjectsSection() {
         <h1 className="text-2xl font-bold text-gray-100">Projects</h1>
         <button
           type="button"
-          onClick={() => setCreateModalOpen(true)}
+          onClick={() => navigate({ to: "/plan" })}
           className="inline-flex items-center gap-2 bg-white text-black text-sm font-bold rounded-full px-4 py-2.5 hover:bg-zinc-200 transition-colors"
         >
           <FolderPlus size={16} />
@@ -138,7 +136,7 @@ export function ProjectsSection() {
           <p className="text-sm text-gray-100/50">No projects found.</p>
           <button
             type="button"
-            onClick={() => setCreateModalOpen(true)}
+            onClick={() => navigate({ to: "/plan" })}
             className="text-sm text-sky-400 hover:text-sky-300 font-medium"
           >
             Create your first project
@@ -222,13 +220,6 @@ export function ProjectsSection() {
             </table>
           </div>
         </>
-      )}
-
-      {createModalOpen && (
-        <CreateProjectModal
-          onClose={() => setCreateModalOpen(false)}
-          onCreated={loadProjects}
-        />
       )}
     </div>
   );
