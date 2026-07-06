@@ -14,18 +14,18 @@ enum Role {
 
 enum ProjectStatus {
   ON_PROGRESS
-  PENDING
+  NOT_STARTED
   DONE
 }
 
 enum MilestoneStatus {
-  PENDING
+  NOT_STARTED
   IN_PROGRESS
   DONE
 }
 
 enum TaskStatus {
-  PENDING
+  NOT_STARTED
   IN_PROGRESS
   DONE
 }
@@ -41,77 +41,85 @@ enum ResourceType {
 }
 
 enum Rating {
-  ONE @map("1")
-  TWO @map("2")
+  ONE   @map("1")
+  TWO   @map("2")
   THREE @map("3")
-  FOUR @map("4")
-  FIVE @map("5")
+  FOUR  @map("4")
+  FIVE  @map("5")
 }
 
 model User {
-  id  String  @id @default(uuid())
-  name  String
-  email String @unique
-  password String
-  role  Role
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String?
+  role      Role?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  ownedProjects Project[] @relation("FreelancerProjects")
-  clientProjects  Project[] @relation("ClientProjects")
+  ownedProjects  Project[] @relation("FreelancerProjects")
+  clientProjects Project[] @relation("ClientProjects")
+
+  emailVerified Boolean   @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
 
   @@map("users")
 }
 
 model Project {
-  id  String  @id @default(uuid())
-  freelancerId  String  @map("freelancer_id")
-  clientId  String  @map("client_id")
-  title String
-  description String? @db.Text
-  progress String @default("0%")
-  status ProjectStatus @default(PENDING)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id           String        @id @default(uuid())
+  freelancerId String        @map("freelancer_id")
+  clientId     String?       @map("client_id")
+  title        String
+  description  String?       @db.Text
+  progress     String        @default("0%")
+  status       ProjectStatus @default(NOT_STARTED)
+  startDate    DateTime?     @map("start_date")
+  dueDate      DateTime?     @map("due_date")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
 
-  freelancer User @relation("FreelancerProjects", fields: [freelancerId], references: [id])
-  client User @relation("ClientProjects", fields: [clientId], references: [id])
+  freelancer User              @relation("FreelancerProjects", fields: [freelancerId], references: [id])
+  client     User?             @relation("ClientProjects", fields: [clientId], references: [id])
   milestones Milestone[]
-  invoices Invoice[]
-  feedbacks Feedback[]
-  resources Resource[]
-  documents ProjectDocument[]
-  logs ProjectLog[]
+  invoices   Invoice[]
+  feedbacks  Feedback[]
+  resources  Resource[]
+  documents  ProjectDocument[]
+  logs       ProjectLog[]
 
   @@map("projects")
 }
 
 model Milestone {
-  id  String  @id @default(uuid())
-  projectId String @map("project_id")
-  title String
-  status MilestoneStatus @default(PENDING)
-  startDate DateTime? @map("start_date")
-  dueDate DateTime? @map("due_date")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id          String          @id @default(uuid())
+  projectId   String          @map("project_id")
+  title       String
+  description String?         @db.Text
+  status      MilestoneStatus @default(NOT_STARTED)
+  startDate   DateTime?       @map("start_date")
+  dueDate     DateTime?       @map("due_date")
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id])
-  tasks Task[]
+  tasks   Task[]
 
   @@map("milestones")
 }
 
 model Task {
-  id  String  @id @default(uuid())
-  milestoneId String @map("milestone_id")
-  title String
-  description String? @db.Text
-  status TaskStatus @default(PENDING)
-  startDate DateTime? @map("start_date")
-  dueDate DateTime? @map("due_date")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id          String     @id @default(uuid())
+  milestoneId String     @map("milestone_id")
+  title       String
+  description String?    @db.Text
+  status      TaskStatus @default(NOT_STARTED)
+  startDate   DateTime?  @map("start_date")
+  dueDate     DateTime?  @map("due_date")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
 
   milestone Milestone @relation(fields: [milestoneId], references: [id])
 
@@ -119,14 +127,14 @@ model Task {
 }
 
 model Invoice {
-  id  String  @id @default(uuid())
-  projectId String @map("project_id")
-  amount Decimal
-  status InvoiceStatus @default(PENDING)
-  paymentLink String? @map("payment_link")
-  issuedDate DateTime @map("issued_date")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id          String        @id @default(uuid())
+  projectId   String        @map("project_id")
+  amount      Decimal
+  status      InvoiceStatus @default(PENDING)
+  paymentLink String?       @map("payment_link")
+  issuedDate  DateTime      @map("issued_date")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id])
 
@@ -134,13 +142,13 @@ model Invoice {
 }
 
 model Feedback {
-  id  String  @id @default(uuid())
-  projectId String @map("project_id")
-  title String
-  description String? @db.Text
-  rating Rating
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  title       String
+  description String?  @db.Text
+  rating      Rating
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id])
 
@@ -148,13 +156,13 @@ model Feedback {
 }
 
 model Resource {
-  id  String  @id @default(uuid())
-  projectId String @map("project_id")
-  title String
-  type ResourceType
-  url String
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id        String       @id @default(uuid())
+  projectId String       @map("project_id")
+  title     String
+  type      ResourceType
+  url       String
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id])
 
@@ -162,13 +170,13 @@ model Resource {
 }
 
 model ProjectDocument {
-  id  String  @id @default(uuid())
-  projectId String @map("project_id")
-  title String
-  content String? @db.Text
-  version Int @default(1)
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt  @map("updated_at")
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  title     String
+  content   String?  @db.Text
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   project Project @relation(fields: [projectId], references: [id])
 
@@ -176,13 +184,61 @@ model ProjectDocument {
 }
 
 model ProjectLog {
-  id  String  @id @default(uuid())
-  projectId String @map("project_id")
-  action String
-  description String? @db.Text
-  createdAt DateTime  @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  projectId   String   @map("project_id")
+  action      String
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
 
   project Project @relation(fields: [projectId], references: [id])
 
   @@map("project_logs")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }

@@ -10,33 +10,183 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RegisterIndexRouteImport } from './routes/register/index'
+import { Route as PlanIndexRouteImport } from './routes/plan/index'
+import { Route as OnboardingIndexRouteImport } from './routes/onboarding/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AuthIndexRouteImport } from './routes/auth/index'
+import { Route as ProjectProjectNameIndexRouteImport } from './routes/project/$projectName/index'
+import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
+import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
+import { Route as ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/index'
+import { Route as ProjectProjectNameDocumentDocumentTitleIndexRouteImport } from './routes/project/$projectName/document/$documentTitle/index'
+import { Route as ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/task/$taskId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterIndexRoute = RegisterIndexRouteImport.update({
+  id: '/register/',
+  path: '/register/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanIndexRoute = PlanIndexRouteImport.update({
+  id: '/plan/',
+  path: '/plan/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingIndexRoute = OnboardingIndexRouteImport.update({
+  id: '/onboarding/',
+  path: '/onboarding/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthIndexRoute = AuthIndexRouteImport.update({
+  id: '/auth/',
+  path: '/auth/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectProjectNameIndexRoute = ProjectProjectNameIndexRouteImport.update({
+  id: '/project/$projectName/',
+  path: '/project/$projectName/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAdminIndexRoute = DashboardAdminIndexRouteImport.update({
+  id: '/dashboard/admin/',
+  path: '/dashboard/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjectProjectNameMilestoneMilestoneTitleIndexRoute =
+  ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport.update({
+    id: '/project/$projectName/milestone/$milestoneTitle/',
+    path: '/project/$projectName/milestone/$milestoneTitle/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectProjectNameDocumentDocumentTitleIndexRoute =
+  ProjectProjectNameDocumentDocumentTitleIndexRouteImport.update({
+    id: '/project/$projectName/document/$documentTitle/',
+    path: '/project/$projectName/document/$documentTitle/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute =
+  ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport.update({
+    id: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/',
+    path: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth/': typeof AuthIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
+  '/plan/': typeof PlanIndexRoute
+  '/register/': typeof RegisterIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/project/$projectName/': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/document/$documentTitle/': typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthIndexRoute
+  '/login': typeof LoginIndexRoute
+  '/onboarding': typeof OnboardingIndexRoute
+  '/plan': typeof PlanIndexRoute
+  '/register': typeof RegisterIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/admin': typeof DashboardAdminIndexRoute
+  '/project/$projectName': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/document/$documentTitle': typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/task/$taskId': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth/': typeof AuthIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/onboarding/': typeof OnboardingIndexRoute
+  '/plan/': typeof PlanIndexRoute
+  '/register/': typeof RegisterIndexRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
+  '/dashboard/admin/': typeof DashboardAdminIndexRoute
+  '/project/$projectName/': typeof ProjectProjectNameIndexRoute
+  '/project/$projectName/document/$documentTitle/': typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/': typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth/'
+    | '/login/'
+    | '/onboarding/'
+    | '/plan/'
+    | '/register/'
+    | '/api/auth/$'
+    | '/dashboard/admin/'
+    | '/project/$projectName/'
+    | '/project/$projectName/document/$documentTitle/'
+    | '/project/$projectName/milestone/$milestoneTitle/'
+    | '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/login'
+    | '/onboarding'
+    | '/plan'
+    | '/register'
+    | '/api/auth/$'
+    | '/dashboard/admin'
+    | '/project/$projectName'
+    | '/project/$projectName/document/$documentTitle'
+    | '/project/$projectName/milestone/$milestoneTitle'
+    | '/project/$projectName/milestone/$milestoneTitle/task/$taskId'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth/'
+    | '/login/'
+    | '/onboarding/'
+    | '/plan/'
+    | '/register/'
+    | '/api/auth/$'
+    | '/dashboard/admin/'
+    | '/project/$projectName/'
+    | '/project/$projectName/document/$documentTitle/'
+    | '/project/$projectName/milestone/$milestoneTitle/'
+    | '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthIndexRoute: typeof AuthIndexRoute
+  LoginIndexRoute: typeof LoginIndexRoute
+  OnboardingIndexRoute: typeof OnboardingIndexRoute
+  PlanIndexRoute: typeof PlanIndexRoute
+  RegisterIndexRoute: typeof RegisterIndexRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
+  ProjectProjectNameIndexRoute: typeof ProjectProjectNameIndexRoute
+  ProjectProjectNameDocumentDocumentTitleIndexRoute: typeof ProjectProjectNameDocumentDocumentTitleIndexRoute
+  ProjectProjectNameMilestoneMilestoneTitleIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRoute
+  ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute: typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,12 +198,112 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register/': {
+      id: '/register/'
+      path: '/register'
+      fullPath: '/register/'
+      preLoaderRoute: typeof RegisterIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan/': {
+      id: '/plan/'
+      path: '/plan'
+      fullPath: '/plan/'
+      preLoaderRoute: typeof PlanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding/': {
+      id: '/onboarding/'
+      path: '/onboarding'
+      fullPath: '/onboarding/'
+      preLoaderRoute: typeof OnboardingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/': {
+      id: '/auth/'
+      path: '/auth'
+      fullPath: '/auth/'
+      preLoaderRoute: typeof AuthIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/project/$projectName/': {
+      id: '/project/$projectName/'
+      path: '/project/$projectName'
+      fullPath: '/project/$projectName/'
+      preLoaderRoute: typeof ProjectProjectNameIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/admin/': {
+      id: '/dashboard/admin/'
+      path: '/dashboard/admin'
+      fullPath: '/dashboard/admin/'
+      preLoaderRoute: typeof DashboardAdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/project/$projectName/milestone/$milestoneTitle/': {
+      id: '/project/$projectName/milestone/$milestoneTitle/'
+      path: '/project/$projectName/milestone/$milestoneTitle'
+      fullPath: '/project/$projectName/milestone/$milestoneTitle/'
+      preLoaderRoute: typeof ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/project/$projectName/document/$documentTitle/': {
+      id: '/project/$projectName/document/$documentTitle/'
+      path: '/project/$projectName/document/$documentTitle'
+      fullPath: '/project/$projectName/document/$documentTitle/'
+      preLoaderRoute: typeof ProjectProjectNameDocumentDocumentTitleIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/project/$projectName/milestone/$milestoneTitle/task/$taskId/': {
+      id: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
+      path: '/project/$projectName/milestone/$milestoneTitle/task/$taskId'
+      fullPath: '/project/$projectName/milestone/$milestoneTitle/task/$taskId/'
+      preLoaderRoute: typeof ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthIndexRoute: AuthIndexRoute,
+  LoginIndexRoute: LoginIndexRoute,
+  OnboardingIndexRoute: OnboardingIndexRoute,
+  PlanIndexRoute: PlanIndexRoute,
+  RegisterIndexRoute: RegisterIndexRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
+  DashboardAdminIndexRoute: DashboardAdminIndexRoute,
+  ProjectProjectNameIndexRoute: ProjectProjectNameIndexRoute,
+  ProjectProjectNameDocumentDocumentTitleIndexRoute:
+    ProjectProjectNameDocumentDocumentTitleIndexRoute,
+  ProjectProjectNameMilestoneMilestoneTitleIndexRoute:
+    ProjectProjectNameMilestoneMilestoneTitleIndexRoute,
+  ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute:
+    ProjectProjectNameMilestoneMilestoneTitleTaskTaskIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
