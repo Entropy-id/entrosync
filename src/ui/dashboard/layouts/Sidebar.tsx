@@ -4,7 +4,6 @@ import {
 	HelpCircle,
 	LayoutGrid,
 	type LucideIcon,
-	Plus,
 	Settings,
 	X,
 } from "lucide-react";
@@ -24,7 +23,6 @@ const navItems: NavItemConfig[] = [
 interface SidebarProps {
 	currentSection: Section;
 	onChangeSection: (section: Section) => void;
-	onGenerateInvoice?: () => void;
 	mobileOpen?: boolean;
 	onClose?: () => void;
 }
@@ -32,12 +30,10 @@ interface SidebarProps {
 function SidebarContent({
 	currentSection,
 	onChangeSection,
-	onGenerateInvoice,
 	onClose,
 }: {
 	currentSection: Section;
 	onChangeSection: (section: Section) => void;
-	onGenerateInvoice?: () => void;
 	onClose?: () => void;
 }) {
 	const handleNav = (section: Section) => {
@@ -83,14 +79,14 @@ function SidebarContent({
 
 			<div className="space-y-3">
 				<hr className="border-neutral-800 -mx-4" />
-				<button
+				{/*<button
 					type="button"
 					onClick={onGenerateInvoice}
 					className="w-full bg-white text-black text-sm font-bold rounded-full py-3 flex items-center justify-center gap-2 hover:bg-zinc-200 transition-colors"
 				>
 					<Plus size={16} strokeWidth={2.5} />
 					Generate Invoice
-				</button>
+				</button>*/}
 				<div className="space-y-1 pt-2">
 					<NavItem icon={Settings} label="Settings" />
 					<NavItem icon={HelpCircle} label="Support" />
@@ -103,7 +99,6 @@ function SidebarContent({
 export function Sidebar({
 	currentSection,
 	onChangeSection,
-	onGenerateInvoice,
 	mobileOpen,
 	onClose,
 }: SidebarProps) {
@@ -114,7 +109,6 @@ export function Sidebar({
 				<SidebarContent
 					currentSection={currentSection}
 					onChangeSection={onChangeSection}
-					onGenerateInvoice={onGenerateInvoice}
 				/>
 			</aside>
 
@@ -134,7 +128,6 @@ export function Sidebar({
 						<SidebarContent
 							currentSection={currentSection}
 							onChangeSection={onChangeSection}
-							onGenerateInvoice={onGenerateInvoice}
 							onClose={onClose}
 						/>
 					</aside>

@@ -1,20 +1,25 @@
+import { randomUUID } from "node:crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { auth } from "#/modules/auth/auth.utils";
+import { sendInviteEmail } from "#/modules/email/email.service";
 import { prisma } from "#/utils/prisma";
 import { slugify } from "./project.mock";
 import {
 	createMilestoneSchema,
+	createProjectInviteSchema,
 	createProjectSchema,
 	createProjectWithPrdSchema,
 	createTaskSchema,
 	deleteMilestoneSchema,
 	deleteProjectDocumentSchema,
 	deleteTaskSchema,
+	getProjectByInviteTokenSchema,
 	milestoneByProjectSchema,
 	projectByIdSchema,
 	projectByTitleSchema,
+	revokeInviteSchema,
 	updateMilestoneSchema,
 	updateMilestoneStatusSchema,
 	updateProjectDocumentSchema,
@@ -26,6 +31,7 @@ import {
 	serializeDocument,
 	serializeMilestone,
 	serializeProjectDetail,
+	serializeProjectForClient,
 	serializeProjectWithMilestones,
 	serializeTask,
 } from "./project.utils";
@@ -245,19 +251,33 @@ export const createProjectWithPrd = createServerFn({
  */
 export const deleteProject = createServerFn({
 	method: "POST",
-}).handler(async ({ data }) => {
-	const { id } = projectByIdSchema.parse(data);
-	const project = await prisma.project.delete({
-		where: { id },
-		include: {
-			milestones: {
-				include: { tasks: true },
-				orderBy: { createdAt: "asc" },
+})
+	.validator((input) => projectByIdSchema.parse(input))
+	.handler(async ({ data }) => {
+		const { id } = data;
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
+		if (!session) throw new Error("Unauthorized");
+
+		const existing = await prisma.project.findUnique({
+			where: { id },
+			select: { freelancerId: true },
+		});
+		if (!existing || existing.freelancerId !== session.user.id) {
+			throw new Error("Forbidden");
+		}
+
+		const project = await prisma.project.delete({
+			where: { id },
+			include: {
+				milestones: {
+					include: { tasks: true },
+					orderBy: { createdAt: "asc" },
+				},
 			},
-		},
+		});
+		return serializeProjectWithMilestones(project);
 	});
-	return serializeProjectWithMilestones(project);
-});
 
 /**
  * Fetches milestones by project ID.
@@ -482,4 +502,167 @@ export const deleteProjectDocument = createServerFn({
 		const { id } = deleteProjectDocumentSchema.parse(data);
 		await prisma.projectDocument.delete({ where: { id } });
 		return null;
+	});
+
+/**
+ * Creates a shareable invite token for a client to view a project.
+ *
+ * @remarks
+ * Server function — runs only on the server.
+ * Requires freelancer auth and project ownership.
+ *
+ * @returns The invite URL and token.
+ */
+export const createProjectInvite = createServerFn({
+	method: "POST",
+})
+	.validator((input) => createProjectInviteSchema.parse(input))
+	.handler(async ({ data }) => {
+		const parsed = createProjectInviteSchema.parse(data);
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
+		if (!session) throw new Error("Unauthorized");
+
+		const project = await prisma.project.findFirst({
+			where: { id: parsed.projectId, freelancerId: session.user.id },
+			include: { freelancer: { select: { name: true } } },
+		});
+		if (!project) throw new Error("Project not found");
+
+		const token = randomUUID();
+		const expiresAt = new Date();
+		expiresAt.setDate(expiresAt.getDate() + 30);
+
+		const invite = await prisma.projectInvite.create({
+			data: {
+				token,
+				projectId: parsed.projectId,
+				email: parsed.email,
+				expiresAt,
+			},
+		});
+
+		const baseUrl = process.env.APP_URL ?? "http://localhost:3000";
+		const url = `${baseUrl}/client/${token}`;
+
+		if (parsed.email) {
+			await sendInviteEmail({
+				to: parsed.email,
+				clientName: parsed.email.split("@")[0],
+				freelancerName: project.freelancer.name ?? "Your freelancer",
+				projectTitle: project.title,
+				inviteUrl: url,
+			}).catch((err) => {
+				console.error("Failed to send invite email:", err);
+			});
+		}
+
+		return { inviteId: invite.id, token, url };
+	});
+
+/**
+ * Fetches a project by invite token (public, no auth required).
+ *
+ * @remarks
+ * Server function — runs only on the server.
+ * Validates token expiry.
+ *
+ * @returns Serialized project detail.
+ */
+export const getProjectInvites = createServerFn({
+	method: "GET",
+})
+	.validator((input) => z.object({ projectId: z.string().uuid() }).parse(input))
+	.handler(async ({ data }) => {
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
+		if (!session) throw new Error("Unauthorized");
+
+		const invites = await prisma.projectInvite.findMany({
+			where: {
+				projectId: data.projectId,
+				project: { freelancerId: session.user.id },
+			},
+			orderBy: { createdAt: "desc" },
+		});
+
+		return invites.map((i) => ({
+			id: i.id,
+			email: i.email,
+			token: i.token,
+			expiresAt: i.expiresAt.toISOString(),
+			createdAt: i.createdAt.toISOString(),
+			isExpired: i.expiresAt < new Date(),
+		}));
+	});
+
+export const revokeProjectInvite = createServerFn({
+	method: "POST",
+})
+	.validator((input) => revokeInviteSchema.parse(input))
+	.handler(async ({ data }) => {
+		const headers = getRequestHeaders();
+		const session = await auth.api.getSession({ headers });
+		if (!session) throw new Error("Unauthorized");
+
+		const invite = await prisma.projectInvite.findFirst({
+			where: {
+				id: data.inviteId,
+				project: { freelancerId: session.user.id },
+			},
+		});
+		if (!invite) throw new Error("Invite not found");
+
+		await prisma.projectInvite.delete({ where: { id: data.inviteId } });
+		return { success: true };
+	});
+
+export const getProjectByInviteToken = createServerFn({
+	method: "GET",
+})
+	.validator((input) => getProjectByInviteTokenSchema.parse(input))
+	.handler(async ({ data }) => {
+		const { token } = getProjectByInviteTokenSchema.parse(data);
+
+		const invite = await prisma.projectInvite.findUnique({
+			where: { token },
+		});
+		if (!invite) throw new Error("Invalid invite token");
+		if (invite.expiresAt < new Date()) throw new Error("Invite expired");
+
+		// Track first access
+		if (!invite.accessedAt) {
+			await prisma.projectInvite.update({
+				where: { id: invite.id },
+				data: { accessedAt: new Date() },
+			});
+		}
+
+		// Log the view
+		await prisma.projectLog.create({
+			data: {
+				projectId: invite.projectId,
+				action: "CLIENT_DASHBOARD_VIEWED",
+				description: `Client viewed dashboard via invite token`,
+			},
+		});
+
+		const project = await prisma.project.findUnique({
+			where: { id: invite.projectId },
+			include: {
+				freelancer: { select: { name: true, email: true } },
+				milestones: {
+					include: { tasks: true },
+					orderBy: { createdAt: "asc" },
+				},
+				invoices: { orderBy: { issuedDate: "desc" } },
+				feedbacks: { orderBy: { createdAt: "desc" } },
+				resources: { orderBy: { createdAt: "desc" } },
+				documents: { orderBy: { createdAt: "desc" } },
+				logs: { orderBy: { createdAt: "desc" } },
+			},
+		});
+		if (!project) throw new Error("Project not found");
+
+		return serializeProjectForClient(project);
 	});

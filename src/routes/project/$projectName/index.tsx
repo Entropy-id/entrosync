@@ -19,9 +19,11 @@ export const Route = createFileRoute("/project/$projectName/")({
 		if (!project) throw notFound();
 		return { project };
 	},
+	staleTime: 30_000,
 });
 
 function RouteComponent() {
 	const { project } = Route.useLoaderData();
-	return <ProjectDetailPage project={project} />;
+	const session = Route.useRouteContext();
+	return <ProjectDetailPage project={project} user={session?.user} />;
 }

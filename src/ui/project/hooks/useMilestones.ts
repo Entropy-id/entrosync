@@ -1,5 +1,6 @@
+import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
 	createMilestone,
 	deleteMilestone,
@@ -27,6 +28,7 @@ export type InitialMilestone = {
 };
 
 export function useMilestones(initialMilestones: InitialMilestone[]) {
+	const router = useRouter();
 	const [milestones, setMilestones] = useState<MilestoneDraft[]>(
 		initialMilestones.map((m) => ({
 			id: m.id,
@@ -38,6 +40,20 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 			completion: computeMilestoneCompletion(m.tasks),
 		})),
 	);
+
+	useEffect(() => {
+		setMilestones(
+			initialMilestones.map((m) => ({
+				id: m.id,
+				title: m.title,
+				projectId: m.projectId,
+				description: m.description ?? "",
+				date: formatDisplayDate(m.dueDate),
+				tasks: m.tasks.length,
+				completion: computeMilestoneCompletion(m.tasks),
+			})),
+		);
+	}, [initialMilestones]);
 
 	const updateMilestoneFn = useServerFn(updateMilestone);
 	const createMilestoneFn = useServerFn(createMilestone);
@@ -86,6 +102,7 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 				await createMilestoneFn({
 					data: { ...data },
 				});
+				await router.invalidate();
 			} else if (editingMilestoneId !== null) {
 				setMilestones((prev) =>
 					prev.map((m, i) => (i === editingMilestoneId ? draftMilestone : m)),
@@ -94,6 +111,7 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 				await updateMilestoneFn({
 					data: { id: draftMilestone.id, ...data },
 				});
+				await router.invalidate();
 			}
 		} catch (error) {
 			if (editingMilestoneId === "new") {
@@ -111,6 +129,7 @@ export function useMilestones(initialMilestones: InitialMilestone[]) {
 		setMilestones((prev) => prev.filter((_, i) => i !== index));
 		if (editingMilestoneId === index) setEditingMilestoneId(null);
 		await deleteMilestoneFn({ data: { id: milestones[index].id } });
+		await router.invalidate();
 	}
 
 	function handleCancel() {

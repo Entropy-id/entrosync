@@ -1,13 +1,17 @@
 export function apiStatusToDisplay(s: string) {
 	if (s === "NOT_STARTED") return "Not Started";
-	if (s === "ON_PROGRESS") return "In Progress";
+	if (s === "ON_PROGRESS" || s === "IN_PROGRESS") return "In Progress";
 	if (s === "DONE") return "Completed";
 	return "Not Started";
 }
 
-export function displayStatusToApi(s: string) {
+export function displayStatusToApi(
+	s: string,
+	kind: "project" | "task" | "milestone" = "project",
+) {
 	if (s === "Not Started") return "NOT_STARTED";
-	if (s === "In Progress") return "ON_PROGRESS";
+	if (s === "In Progress")
+		return kind === "project" ? "ON_PROGRESS" : "IN_PROGRESS";
 	if (s === "Completed") return "DONE";
 	return "NOT_STARTED";
 }

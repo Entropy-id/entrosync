@@ -1,7 +1,6 @@
-import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useRef, useState } from "react";
-import { updateProject } from "#/modules/project/project.api";
+import { useRef, useState } from "react";
+import { updateTask } from "#/modules/project/project.api";
 import {
 	apiStatusToDisplay,
 	displayStatusToApi,
@@ -9,17 +8,19 @@ import {
 	getStatusStyle,
 } from "../utils";
 
-export function ProjectProperties({
-	projectId,
-	initialStatus,
-	initialStartDate,
-	initialDueDate,
-}: {
-	projectId: string;
+interface TaskPropertiesProps {
+	taskId: string;
 	initialStatus: string;
 	initialStartDate: string | null;
 	initialDueDate: string | null;
-}) {
+}
+
+export function TaskProperties({
+	taskId,
+	initialStatus,
+	initialStartDate,
+	initialDueDate,
+}: TaskPropertiesProps) {
 	const [status, setStatus] = useState(apiStatusToDisplay(initialStatus));
 	const [startDate, setStartDate] = useState(
 		(initialStartDate || "").slice(0, 10),
@@ -31,37 +32,27 @@ export function ProjectProperties({
 
 	const startDateRef = useRef<HTMLInputElement>(null);
 	const dueDateRef = useRef<HTMLInputElement>(null);
-	const updateProjectFn = useServerFn(updateProject);
-	const router = useRouter();
-
-	useEffect(() => {
-		setStatus(apiStatusToDisplay(initialStatus));
-		setStartDate((initialStartDate || "").slice(0, 10));
-		setDueDate((initialDueDate || "").slice(0, 10));
-	}, [initialStatus, initialStartDate, initialDueDate]);
+	const updateTaskFn = useServerFn(updateTask);
 
 	async function patch(data: Record<string, unknown>, rollback: () => void) {
 		try {
-			await updateProjectFn({ data: { id: projectId, ...data } });
-			await router.invalidate();
+			await updateTaskFn({ data: { id: taskId, ...data } });
 		} catch (err) {
-			console.error("Failed to update project", err);
+			console.error("Failed to update task", err);
 			rollback();
 		}
 	}
 
 	return (
 		<div className="bg-zinc-900/50 border border-neutral-800 rounded-2xl p-5">
-			<div className="flex items-center justify-between mb-4">
-				<h3 className="text-sm font-semibold text-gray-100">Properties</h3>
-			</div>
+			<h3 className="text-sm font-semibold text-gray-100 mb-4">Properties</h3>
 			<div className="space-y-4">
 				{/* Status */}
 				<div className="flex items-center justify-between relative">
 					<span className="text-sm text-gray-100/50">Status</span>
 					<div className="relative">
 						{editingProperty === "status" && (
-							<div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-[100px]">
+							<div className="absolute right-0 top-full mt-1 z-10 bg-zinc-900 border border-neutral-700 rounded-xl p-1.5 shadow-xl space-y-1 min-w-25">
 								{(["Not Started", "In Progress", "Completed"] as const).map(
 									(s) => (
 										<button
@@ -70,7 +61,7 @@ export function ProjectProperties({
 											onClick={() => {
 												setStatus(s);
 												setEditingProperty(null);
-												patch({ status: displayStatusToApi(s) }, () =>
+												patch({ status: displayStatusToApi(s, "task") }, () =>
 													setStatus(apiStatusToDisplay(initialStatus)),
 												);
 											}}

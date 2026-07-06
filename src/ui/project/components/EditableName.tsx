@@ -1,7 +1,7 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Pencil } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { updateProject } from "#/modules/project/project.api";
 import { slugify } from "#/modules/project/project.mock";
 
@@ -17,19 +17,25 @@ export function EditableName({
 	const inputRef = useRef<HTMLInputElement>(null);
 	const updateProjectFn = useServerFn(updateProject);
 	const navigate = useNavigate();
+	const router = useRouter();
+
+	useEffect(() => {
+		setName(initialName);
+	}, [initialName]);
 
 	const handleSave = useCallback(async () => {
 		setEditing(false);
 		if (name === initialName) return;
 		try {
 			await updateProjectFn({ data: { id: projectId, title: name } });
+			await router.invalidate();
 			const slug = slugify(name);
 			navigate({ to: "/project/$projectName", params: { projectName: slug } });
 		} catch (err) {
 			console.error("Failed to update project name", err);
 			setName(initialName);
 		}
-	}, [name, projectId, initialName, updateProjectFn, navigate]);
+	}, [name, projectId, initialName, updateProjectFn, navigate, router]);
 
 	if (editing) {
 		return (

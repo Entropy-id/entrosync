@@ -1,4 +1,4 @@
-import { Copyright, Menu } from "lucide-react";
+import { Copyright } from "lucide-react";
 
 interface BrandingCardProps {
 	title: string;
@@ -19,7 +19,11 @@ export function BrandingCard({
 			<div
 				className={`flex items-center gap-2 ${align === "right" ? "flex-row-reverse" : ""}`}
 			>
-				<Menu size={20} />
+				<img
+					src="/logo_entrosync.svg"
+					alt="EntroSync Logo"
+					className="w-8 h-8"
+				/>
 				<span className="font-semibold text-lg">EntroSync</span>
 			</div>
 			{/* Branding Text */}
