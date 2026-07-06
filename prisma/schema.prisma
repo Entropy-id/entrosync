@@ -89,6 +89,7 @@ model Project {
   resources  Resource[]
   documents  ProjectDocument[]
   logs       ProjectLog[]
+  invites    ProjectInvite[]
 
   @@map("projects")
 }
@@ -193,6 +194,18 @@ model ProjectLog {
   project Project @relation(fields: [projectId], references: [id])
 
   @@map("project_logs")
+}
+
+model ProjectInvite {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  projectId String   @map("project_id")
+  email     String?
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_invites")
 }
 
 model Session {
