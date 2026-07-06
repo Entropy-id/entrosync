@@ -18,6 +18,8 @@ import { Route as AuthIndexRouteImport } from './routes/auth/index'
 import { Route as ProjectProjectNameIndexRouteImport } from './routes/project/$projectName/index'
 import { Route as DashboardAdminIndexRouteImport } from './routes/dashboard/admin/index'
 import { Route as ClientTokenIndexRouteImport } from './routes/client/$token/index'
+import { Route as ClientTokenProjectsRouteImport } from './routes/client/$token/projects'
+import { Route as ClientTokenInvoicesRouteImport } from './routes/client/$token/invoices'
 import { Route as ApiAuthSplatRouteImport } from './routes/api.auth.$'
 import { Route as ProjectProjectNameMilestoneMilestoneTitleIndexRouteImport } from './routes/project/$projectName/milestone/$milestoneTitle/index'
 import { Route as ProjectProjectNameDocumentDocumentTitleIndexRouteImport } from './routes/project/$projectName/document/$documentTitle/index'
@@ -68,6 +70,16 @@ const ClientTokenIndexRoute = ClientTokenIndexRouteImport.update({
   path: '/client/$token/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ClientTokenProjectsRoute = ClientTokenProjectsRouteImport.update({
+  id: '/client/$token/projects',
+  path: '/client/$token/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientTokenInvoicesRoute = ClientTokenInvoicesRouteImport.update({
+  id: '/client/$token/invoices',
+  path: '/client/$token/invoices',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -100,6 +112,8 @@ export interface FileRoutesByFullPath {
   '/plan/': typeof PlanIndexRoute
   '/register/': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/client/$token/invoices': typeof ClientTokenInvoicesRoute
+  '/client/$token/projects': typeof ClientTokenProjectsRoute
   '/client/$token/': typeof ClientTokenIndexRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
@@ -115,6 +129,8 @@ export interface FileRoutesByTo {
   '/plan': typeof PlanIndexRoute
   '/register': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/client/$token/invoices': typeof ClientTokenInvoicesRoute
+  '/client/$token/projects': typeof ClientTokenProjectsRoute
   '/client/$token': typeof ClientTokenIndexRoute
   '/dashboard/admin': typeof DashboardAdminIndexRoute
   '/project/$projectName': typeof ProjectProjectNameIndexRoute
@@ -131,6 +147,8 @@ export interface FileRoutesById {
   '/plan/': typeof PlanIndexRoute
   '/register/': typeof RegisterIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/client/$token/invoices': typeof ClientTokenInvoicesRoute
+  '/client/$token/projects': typeof ClientTokenProjectsRoute
   '/client/$token/': typeof ClientTokenIndexRoute
   '/dashboard/admin/': typeof DashboardAdminIndexRoute
   '/project/$projectName/': typeof ProjectProjectNameIndexRoute
@@ -148,6 +166,8 @@ export interface FileRouteTypes {
     | '/plan/'
     | '/register/'
     | '/api/auth/$'
+    | '/client/$token/invoices'
+    | '/client/$token/projects'
     | '/client/$token/'
     | '/dashboard/admin/'
     | '/project/$projectName/'
@@ -163,6 +183,8 @@ export interface FileRouteTypes {
     | '/plan'
     | '/register'
     | '/api/auth/$'
+    | '/client/$token/invoices'
+    | '/client/$token/projects'
     | '/client/$token'
     | '/dashboard/admin'
     | '/project/$projectName'
@@ -178,6 +200,8 @@ export interface FileRouteTypes {
     | '/plan/'
     | '/register/'
     | '/api/auth/$'
+    | '/client/$token/invoices'
+    | '/client/$token/projects'
     | '/client/$token/'
     | '/dashboard/admin/'
     | '/project/$projectName/'
@@ -194,6 +218,8 @@ export interface RootRouteChildren {
   PlanIndexRoute: typeof PlanIndexRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ClientTokenInvoicesRoute: typeof ClientTokenInvoicesRoute
+  ClientTokenProjectsRoute: typeof ClientTokenProjectsRoute
   ClientTokenIndexRoute: typeof ClientTokenIndexRoute
   DashboardAdminIndexRoute: typeof DashboardAdminIndexRoute
   ProjectProjectNameIndexRoute: typeof ProjectProjectNameIndexRoute
@@ -267,6 +293,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientTokenIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/client/$token/projects': {
+      id: '/client/$token/projects'
+      path: '/client/$token/projects'
+      fullPath: '/client/$token/projects'
+      preLoaderRoute: typeof ClientTokenProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/client/$token/invoices': {
+      id: '/client/$token/invoices'
+      path: '/client/$token/invoices'
+      fullPath: '/client/$token/invoices'
+      preLoaderRoute: typeof ClientTokenInvoicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -306,6 +346,8 @@ const rootRouteChildren: RootRouteChildren = {
   PlanIndexRoute: PlanIndexRoute,
   RegisterIndexRoute: RegisterIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ClientTokenInvoicesRoute: ClientTokenInvoicesRoute,
+  ClientTokenProjectsRoute: ClientTokenProjectsRoute,
   ClientTokenIndexRoute: ClientTokenIndexRoute,
   DashboardAdminIndexRoute: DashboardAdminIndexRoute,
   ProjectProjectNameIndexRoute: ProjectProjectNameIndexRoute,

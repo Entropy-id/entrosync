@@ -1,21 +1,12 @@
 import { useServerFn } from "@tanstack/react-start";
 import { FileText, PlusCircle, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getInvoices } from "#/modules/invoice/invoice.api";
+import {
+  getInvoices,
+  type SerializedInvoice,
+} from "#/modules/invoice/invoice.api";
 import { InvoiceDownloadButton } from "#/ui/invoice/components/InvoiceDownloadButton";
 import { StatusBadge } from "../components/StatusBadge";
-
-export type SerializedInvoice = {
-  id: string;
-  projectId: string;
-  amount: number;
-  status: "PENDING" | "PAID";
-  paymentLink: string | null;
-  issuedDate: string | null;
-  createdAt: string | null;
-  updatedAt: string | null;
-  project: { id: string; title: string };
-};
 
 interface InvoiceListProps {
   onSelectInvoice: (id: string) => void;
@@ -207,6 +198,7 @@ function InvoiceRow({
             status={invoice.status}
             issuedDate={invoice.issuedDate}
             projectTitle={invoice.project.title}
+            freelancerName={invoice.project.freelancerName ?? undefined}
             size="sm"
           />
         </span>
