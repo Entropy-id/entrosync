@@ -197,13 +197,14 @@ model ProjectLog {
 }
 
 model ProjectInvite {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  projectId String   @map("project_id")
-  email     String?
-  expiresAt DateTime @map("expires_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  token      String    @unique
+  projectId  String    @map("project_id")
+  email      String?
+  expiresAt  DateTime  @map("expires_at")
+  accessedAt DateTime? @map("accessed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  project    Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@map("project_invites")
 }

@@ -31,6 +31,7 @@ import {
   serializeDocument,
   serializeMilestone,
   serializeProjectDetail,
+  serializeProjectForClient,
   serializeProjectWithMilestones,
   serializeTask,
 } from "./project.utils";
@@ -615,9 +616,27 @@ export const getProjectByInviteToken = createServerFn({
     if (!invite) throw new Error("Invalid invite token");
     if (invite.expiresAt < new Date()) throw new Error("Invite expired");
 
+    // Track first access
+    if (!invite.accessedAt) {
+      await prisma.projectInvite.update({
+        where: { id: invite.id },
+        data: { accessedAt: new Date() },
+      });
+    }
+
+    // Log the view
+    await prisma.projectLog.create({
+      data: {
+        projectId: invite.projectId,
+        action: "CLIENT_DASHBOARD_VIEWED",
+        description: `Client viewed dashboard via invite token`,
+      },
+    });
+
     const project = await prisma.project.findUnique({
       where: { id: invite.projectId },
       include: {
+        freelancer: { select: { name: true, email: true } },
         milestones: {
           include: { tasks: true },
           orderBy: { createdAt: "asc" },
@@ -631,5 +650,5 @@ export const getProjectByInviteToken = createServerFn({
     });
     if (!project) throw new Error("Project not found");
 
-    return serializeProjectDetail(project);
+    return serializeProjectForClient(project);
   });
