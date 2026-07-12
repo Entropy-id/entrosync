@@ -380,13 +380,50 @@ export const deleteMilestone = createServerFn({
  *
  * @returns The serialized task details.
  */
+function generateTaskId(prefix: string, existingIds: string[]): string {
+	const regex = new RegExp(`^${prefix}-(\\d+)$`);
+	let max = 0;
+	for (const id of existingIds) {
+		const match = id.match(regex);
+		if (match) {
+			max = Math.max(max, Number.parseInt(match[1], 10));
+		}
+	}
+	return `${prefix}-${max + 1}`;
+}
+
 export const createTask = createServerFn({
 	method: "POST",
 })
 	.validator((input) => createTaskSchema.parse(input))
 	.handler(async ({ data }) => {
 		const parsed = createTaskSchema.parse(data);
-		const task = await prisma.task.create({ data: parsed });
+
+		const milestone = await prisma.milestone.findUnique({
+			where: { id: parsed.milestoneId },
+			include: { project: true },
+		});
+		if (!milestone) throw new Error("Milestone not found");
+
+		const prefix = milestone.project.title.slice(0, 3).toUpperCase();
+
+		const existingTasks = await prisma.task.findMany({
+			where: {
+				milestone: {
+					projectId: milestone.projectId,
+				},
+			},
+			select: { id: true },
+		});
+
+		const taskId = generateTaskId(
+			prefix,
+			existingTasks.map((t) => t.id),
+		);
+
+		const task = await prisma.task.create({
+			data: { ...parsed, id: taskId },
+		});
 		return serializeTask(task);
 	});
 

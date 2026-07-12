@@ -64,7 +64,7 @@ export const createTaskSchema = z.object({
 });
 
 export const updateTaskSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
   title: z.string().min(1).optional(),
   description: z.string().optional(),
   status: TaskStatus.optional(),
@@ -73,11 +73,11 @@ export const updateTaskSchema = z.object({
 });
 
 export const deleteTaskSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
 });
 
 export const updateTaskStatusSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().min(1),
   status: TaskStatus,
 });
 

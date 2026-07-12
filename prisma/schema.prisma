@@ -113,7 +113,7 @@ model Milestone {
 }
 
 model Task {
-  id          String     @id @default(uuid())
+  id          String     @id
   milestoneId String     @map("milestone_id")
   title       String
   description String?    @db.Text
